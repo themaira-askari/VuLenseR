@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
 import { Shield, AlertTriangle, FileText, Activity, Terminal, CheckCircle2, Lock } from 'lucide-react';
 
@@ -10,23 +10,25 @@ const formatText = (text) => {
 
 export default function App() {
   const [requirement, setRequirement] = useState('');
+ 
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+  const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000').replace(/\/+$/, '');
 
   const handleAnalyze = async () => {
-    if (!requirement.trim()) return;
+  if (!requirement.trim()) return;
     setLoading(true);
     setError(null);
     setResult(null);
 
     try {
       const response = await axios.post(
-        'http://127.0.0.1:8000/analyze-requirement',
+        `${apiBaseUrl}/analyze-requirement`,
         { requirement_text: requirement },
         {
           headers: {
-            'X-API-Key': 'mysecretkey124',
+            
             'Content-Type': 'application/json'
           }
         }
@@ -34,7 +36,17 @@ export default function App() {
       setResult(response.data);
     } catch (err) {
       console.error(err);
-      setError('Backend connection failed. Make sure FastAPI server is running.');
+      if (err.response?.status === 401) {
+        setError('Invalid API key. Check the APP_API_KEY configured on the backend.');
+      } else if (err.response?.status === 422) {
+        setError('The requirement is invalid. Enter between 5 and 4000 characters.');
+      } else if (err.response?.status === 429) {
+        setError('Too many requests. Please wait a moment and try again.');
+      } else if (err.response?.status >= 500) {
+        setError('The backend could not complete the analysis. Check the server logs.');
+      } else {
+        setError('Backend connection failed. Make sure the FastAPI server is running.');
+      }
     } finally {
       setLoading(false);
     }
@@ -59,8 +71,7 @@ export default function App() {
             </div>
           </div>
           <div className="flex items-center gap-2 text-xs font-mono text-zinc-400 bg-zinc-900/80 px-3 py-1.5 rounded-lg border border-zinc-800">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            System Online
+            API-powered analysis
           </div>
         </header>
 
@@ -73,9 +84,12 @@ export default function App() {
             value={requirement}
             onChange={(e) => setRequirement(e.target.value)}
             rows={4}
+            maxLength={4000}
             placeholder="e.g., Users can reset their password by entering their email address."
             className="w-full bg-black text-zinc-200 border border-zinc-800 rounded-xl p-4 focus:outline-none focus:border-emerald-500 font-mono text-sm resize-none transition-colors"
           />
+          <p className="text-xs text-zinc-500 text-right">{requirement.length}/4000 characters</p>
+          
           <button
             onClick={handleAnalyze}
             disabled={loading || !requirement.trim()}
@@ -112,7 +126,7 @@ export default function App() {
                 <span className="text-xs uppercase tracking-wider text-zinc-500 font-mono">Overall Risk Assessment</span>
                 <div className="flex items-baseline gap-2 mt-1">
                   <span className="text-3xl font-extrabold text-white tracking-tight">
-                    {result.rule_engine_analysis?.risk_score ?? result.overall_risk_score ?? '3.5'}
+                    {result.rule_engine_analysis?.risk_score ?? result.overall_risk_score ?? 'N/A'}
                   </span>
                   <span className="text-sm font-medium text-zinc-500">/ 10 Risk Score</span>
                 </div>
