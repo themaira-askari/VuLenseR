@@ -42,7 +42,7 @@ AMBIGUITY_PATTERNS = {
 }
 
 SPECIAL_AMBIGUITY = [
-    (r"\b100\s?%", "unverifiable", "100%", 1.0),
+    (r"(?<!\w)100\s?%(?!\w)", "unverifiable", "100%", 1.0),
 ]
 
 RATE_LIMIT_PATTERNS = [
@@ -317,7 +317,7 @@ def find_ambiguity(text: str):
 
     for category, info in AMBIGUITY_PATTERNS.items():
         for w in info["words"]:
-            if re.search(rf"\b{re.escape(w)}\b", text_lower):
+            if re.search(rf"(?<!\w){re.escape(w)}(?!\w)", text_lower):
                 guide = get_ieee_guideline(category, w)
                 found.append({
                     "category": category, 
@@ -375,7 +375,8 @@ def scan_requirement_text(req_text: str):
         "requirement": req_text,
         "ambiguities_found": ambiguities,
         "security_gaps_found": security_gaps,
-        "risk_score": round(ambiguity_score + security_score, 1),
+        # The UI presents this as a score out of 10, so keep the value in range.
+        "risk_score": min(10.0, round(ambiguity_score + security_score, 1)),
     }
 
 
