@@ -12,7 +12,7 @@ Flow per request:
     GROQ_API_KEY   - ai_engine use karta hai
     APP_API_KEY    - is server ki apni key (clients X-API-Key header mein bhejte hain)
     RATE_LIMIT     - optional, default "30/minute" (slowapi format, per IP)
-    CORS_ORIGINS   - optional, comma separated, e.g. "http://localhost:8501"
+    CORS_ORIGINS   - optional, comma separated; defaults to the local Vite dev origins
 
 Run:
     uvicorn main:app --reload
@@ -80,25 +80,24 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+_cors_origins = [
+    origin.strip()
+    for origin in os.getenv("CORS_ORIGINS", "").split(",")
+    if origin.strip()
+]
+if not _cors_origins:
+    _cors_origins = ["http://localhost:5173", "http://127.0.0.1:5173"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Sab origins ko allow karne ke liye
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=_cors_origins,
+    allow_credentials=False,
+    allow_methods=["GET", "POST"],
+    allow_headers=["X-API-Key", "Content-Type"],
 )
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
-
-_cors_origins = [o.strip() for o in os.getenv("CORS_ORIGINS", "").split(",") if o.strip()]
-if _cors_origins:
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=_cors_origins,
-        allow_methods=["GET", "POST"],
-        allow_headers=["X-API-Key", "Content-Type"],
-    )
 
 # auto_error=False: 401 hum khud dete hain; /docs mein "Authorize" button bhi aata hai.
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
