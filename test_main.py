@@ -100,6 +100,32 @@ def test_health(ctx):
     assert r.json()["status"] == "ok"
 
 
+def test_cors_allows_configured_frontend_origin(ctx):
+    allowed_origin = main._cors_origins[0]
+    response = ctx["client"].options(
+        URL,
+        headers={
+            "Origin": allowed_origin,
+            "Access-Control-Request-Method": "POST",
+            "Access-Control-Request-Headers": "content-type,x-api-key",
+        },
+    )
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == allowed_origin
+    assert response.headers.get("access-control-allow-credentials") != "true"
+
+
+def test_cors_rejects_unconfigured_origin(ctx):
+    response = ctx["client"].options(
+        URL,
+        headers={
+            "Origin": "https://untrusted.example",
+            "Access-Control-Request-Method": "POST",
+        },
+    )
+    assert "access-control-allow-origin" not in response.headers
+
+
 # ---------- auth ----------
 
 def test_missing_key_401(ctx):

@@ -1,4 +1,26 @@
-.env
-venv/
-chroma_db/
+# Python
 __pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+
+# Environment variables and local secrets
+.env
+.env.*
+!.env.example
+
+# RAG database and generated data
+chroma_db/
+
+# Frontend dependencies and build output
+node_modules/
+dist/
+.vite/
+
+# Editor and operating-system files
+.vscode/
+.DS_Store
+Thumbs.db
