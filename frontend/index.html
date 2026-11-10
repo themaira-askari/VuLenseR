@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SDLC VuLenseR — Requirement Analyzer</title>
+
+    <meta name="description"
+        content="AI-powered RAG-based software requirement analysis platform">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="css/style.css">
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+
+<div class="app-container">
+
+    <aside class="sidebar" id="sidebar">
+
+        <div class="brand">
+            <div class="brand-icon">
+                <i data-lucide="shield-check"></i>
+            </div>
+
+            <div class="brand-info">
+                <h2>VuLenseR</h2>
+                <span>Secure Requirements AI</span>
+            </div>
+        </div>
+
+        <div class="workspace-label">WORKSPACE</div>
+
+        <nav class="navigation">
+
+            <button class="nav-item active" data-view="dashboard">
+                <i data-lucide="layout-dashboard"></i>
+                <span>Dashboard</span>
+            </button>
+
+            <button class="nav-item" data-view="analyzer">
+                <i data-lucide="scan-search"></i>
+                <span>Requirement Analyzer</span>
+            </button>
+
+            <button class="nav-item" data-view="history">
+                <i data-lucide="history"></i>
+                <span>Analysis History</span>
+            </button>
+
+            <button class="nav-item" data-view="reports">
+                <i data-lucide="file-chart-column"></i>
+                <span>Reports</span>
+            </button>
+
+        </nav>
+
+        <div class="sidebar-bottom">
+
+            <button class="nav-item" data-view="settings">
+                <i data-lucide="settings-2"></i>
+                <span>Settings</span>
+            </button>
+
+            <div class="profile">
+                <div class="profile-avatar">V</div>
+
+                <div class="profile-info">
+                    <strong>Security Analyst</strong>
+                    <span>Workspace</span>
+                </div>
+            </div>
+
+        </div>
+
+    </aside>
+
+
+    <main class="main-content">
+
+        <header class="topbar">
+
+            <div class="topbar-left">
+
+                <button class="icon-button mobile-menu" id="menuToggle">
+                    <i data-lucide="menu"></i>
+                </button>
+
+                <div class="breadcrumb">
+                    <span>Workspace</span>
+                    <i data-lucide="chevron-right"></i>
+                    <strong id="breadcrumbTitle">Dashboard</strong>
+                </div>
+
+            </div>
+
+            <div class="topbar-right">
+
+                <div class="system-status">
+                    <span class="status-dot"></span>
+                    System Ready
+                </div>
+
+                <button class="icon-button" id="themeToggle">
+                    <i data-lucide="moon"></i>
+                </button>
+
+                <div class="topbar-avatar">V</div>
+
+            </div>
+
+        </header>
+
+
+        <div class="page-container">
+
+            <!-- DASHBOARD -->
+
+            <section class="page-section active" id="dashboard">
+
+                <div class="page-heading">
+
+                    <div>
+                        <span class="eyebrow">OVERVIEW</span>
+                        <h1>Welcome to VuLenseR</h1>
+                        <p>Analyze requirements and discover security weaknesses.</p>
+                    </div>
+
+                    <button class="primary-button" data-go="analyzer">
+                        <i data-lucide="plus"></i>
+                        New Analysis
+                    </button>
+
+                </div>
+
+
+                <div class="stats-grid">
+
+                    <div class="stat-card">
+                        <div class="stat-top">
+                            <span>Total Analyses</span>
+                            <div class="stat-icon purple">
+                                <i data-lucide="file-search"></i>
+                            </div>
+                        </div>
+
+                        <h2 id="totalAnalyses">0</h2>
+                        <span class="stat-description">Requirements analyzed</span>
+                    </div>
+
+
+                    <div class="stat-card">
+                        <div class="stat-top">
+                            <span>High Risk Findings</span>
+                            <div class="stat-icon red">
+                                <i data-lucide="shield-alert"></i>
+                            </div>
+                        </div>
+
+                        <h2 id="highRisks">0</h2>
+                        <span class="stat-description">High severity issues</span>
+                    </div>
+
+
+                    <div class="stat-card">
+                        <div class="stat-top">
+                            <span>Average Score</span>
+                            <div class="stat-icon green">
+                                <i data-lucide="chart-no-axes-column"></i>
+                            </div>
+                        </div>
+
+                        <h2 id="averageScore">--</h2>
+                        <span class="stat-description">Requirement quality</span>
+                    </div>
+
+
+                    <div class="stat-card">
+                        <div class="stat-top">
+                            <span>Knowledge Base</span>
+                            <div class="stat-icon blue">
+                                <i data-lucide="book-open-check"></i>
+                            </div>
+                        </div>
+
+                        <h2>OWASP</h2>
+                        <span class="stat-description">RAG security references</span>
+                    </div>
+
+                </div>
+
+
+                <div class="dashboard-grid">
+
+                    <div class="content-card welcome-card">
+
+                        <span class="eyebrow">AI-POWERED ANALYSIS</span>
+
+                        <h2>Build better and more secure software requirements.</h2>
+
+                        <p>
+                            Detect requirement issues, identify missing security
+                            controls and generate improved requirements using
+                            OWASP-based evidence.
+                        </p>
+
+                        <button class="primary-button" data-go="analyzer">
+                            Start Analyzing
+                            <i data-lucide="arrow-up-right"></i>
+                        </button>
+
+                    </div>
+
+
+                    <div class="content-card">
+
+                        <div class="card-heading">
+                            <div>
+                                <h3>Recent Activity</h3>
+                                <p>Your latest analyses</p>
+                            </div>
+
+                            <button class="text-button" data-go="history">
+                                View all
+                            </button>
+                        </div>
+
+                        <div id="recentActivity" class="activity-list"></div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- ANALYZER -->
+
+            <section class="page-section" id="analyzer">
+
+                <div class="page-heading">
+                    <div>
+                        <span class="eyebrow">RAG-BASED ANALYSIS</span>
+                        <h1>Requirement Analyzer</h1>
+                        <p>Evaluate software requirements using AI and OWASP evidence.</p>
+                    </div>
+                </div>
+
+
+                <div class="content-card analyzer-card">
+
+                    <div class="section-heading">
+
+                        <div class="section-icon">
+                            <i data-lucide="file-pen-line"></i>
+                        </div>
+
+                        <div>
+                            <h3>Enter Your Requirement</h3>
+                            <p>Write or paste your software requirement.</p>
+                        </div>
+
+                    </div>
+
+
+                    <form id="analyzeForm">
+
+                        <label for="requirementInput">
+                            Software Requirement
+                        </label>
+
+                        <textarea
+                            id="requirementInput"
+                            placeholder="Example: The system should allow users to register using their email and password..."
+                            minlength="5"
+                            required
+                        ></textarea>
+
+
+                        <div class="input-footer">
+                            <span>Be specific for better results.</span>
+                            <span id="characterCount">0 characters</span>
+                        </div>
+
+
+                        <div class="analyzer-actions">
+
+                            <button type="button"
+                                class="secondary-button"
+                                id="clearRequirement">
+                                <i data-lucide="eraser"></i>
+                                Clear
+                            </button>
+
+                            <button type="submit"
+                                class="primary-button"
+                                id="analyzeButton">
+                                <i data-lucide="sparkles"></i>
+                                Analyze Requirement
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+
+                <!-- LOADING -->
+
+                <div class="content-card loading-card hidden" id="loadingState">
+
+                    <div class="loader"></div>
+
+                    <h3>Analyzing your requirement</h3>
+
+                    <p>
+                        Retrieving relevant OWASP evidence and evaluating
+                        requirement quality.
+                    </p>
+
+                    <div class="loading-steps">
+                        <span>Requirement Analysis</span>
+                        <span>Security Evidence</span>
+                        <span>Final Refinement</span>
+                    </div>
+
+                </div>
+
+
+                <!-- RESULTS -->
+
+                <div class="results-container hidden" id="resultsSection">
+
+                    <div class="results-heading">
+
+                        <div>
+                            <span class="eyebrow">ANALYSIS COMPLETE</span>
+                            <h2>Analysis Results</h2>
+                            <p>Your requirement analysis is ready.</p>
+                        </div>
+
+                        <div class="result-actions">
+
+                            <button class="secondary-button" id="copyResults">
+                                <i data-lucide="copy"></i>
+                                Copy
+                            </button>
+
+                            <button class="secondary-button" id="downloadReport">
+                                <i data-lucide="download"></i>
+                                Export Report
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- SCORE -->
+
+                    <div class="content-card score-card">
+
+                        <div>
+                            <span class="eyebrow">OVERALL QUALITY SCORE</span>
+                            <h2 id="overallScore">--</h2>
+                            <p id="scoreDescription">Requirement quality assessment</p>
+                        </div>
+
+                        <div class="score-circle" id="scoreCircle">
+                            <span id="scoreCircleValue">--</span>
+                        </div>
+
+                    </div>
+
+
+                    <!-- ORIGINAL -->
+
+                    <div class="content-card result-original">
+
+                        <span class="eyebrow">ORIGINAL REQUIREMENT</span>
+
+                        <p id="originalRequirement"></p>
+
+                    </div>
+
+
+                    <!-- REFINED -->
+
+                    <div class="content-card result-card">
+
+                        <div class="result-section-heading">
+                            <div class="result-icon green">
+                                <i data-lucide="check-circle-2"></i>
+                            </div>
+
+                            <div>
+                                <h3>Refined Requirement</h3>
+                                <p>Improved, clear and testable requirement.</p>
+                            </div>
+                        </div>
+
+                        <div id="refinedRequirement"
+                            class="markdown-content refined-output"></div>
+
+                    </div>
+
+
+                    <!-- VIOLATIONS -->
+
+                    <div class="content-card result-card">
+
+                        <div class="result-section-heading">
+                            <div class="result-icon red">
+                                <i data-lucide="shield-alert"></i>
+                            </div>
+
+                            <div>
+                                <h3>Violations / Issues</h3>
+                                <p>Identified requirement and security issues.</p>
+                            </div>
+                        </div>
+
+                        <div id="violationsList" class="finding-list"></div>
+
+                    </div>
+
+
+                    <!-- MISSING -->
+
+                    <div class="content-card result-card">
+
+                        <div class="result-section-heading">
+                            <div class="result-icon purple">
+                                <i data-lucide="list-plus"></i>
+                            </div>
+
+                            <div>
+                                <h3>Missing Requirements</h3>
+                                <p>Important details and controls that are missing.</p>
+                            </div>
+                        </div>
+
+                        <div id="missingRequirementsList" class="finding-list"></div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- HISTORY -->
+
+            <section class="page-section" id="history">
+
+                <div class="page-heading">
+                    <div>
+                        <span class="eyebrow">YOUR WORKSPACE</span>
+                        <h1>Analysis History</h1>
+                        <p>Review previously analyzed requirements.</p>
+                    </div>
+                </div>
+
+
+                <div class="content-card">
+
+                    <div class="history-toolbar">
+
+                        <div class="search-box">
+                            <i data-lucide="search"></i>
+
+                            <input type="search"
+                                id="historySearch"
+                                placeholder="Search analyses...">
+                        </div>
+
+                        <button class="secondary-button" id="clearHistory">
+                            <i data-lucide="trash-2"></i>
+                            Clear History
+                        </button>
+
+                    </div>
+
+                    <div id="historyList" class="history-list"></div>
+
+                </div>
+
+            </section>
+
+
+            <!-- REPORTS -->
+
+            <section class="page-section" id="reports">
+
+                <div class="page-heading">
+                    <div>
+                        <span class="eyebrow">DOCUMENTATION</span>
+                        <h1>Reports</h1>
+                        <p>Access and export your analysis reports.</p>
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <div id="reportsContent" class="reports-list"></div>
+                </div>
+
+            </section>
+
+
+            <!-- SETTINGS -->
+
+            <section class="page-section" id="settings">
+
+                <div class="page-heading">
+                    <div>
+                        <span class="eyebrow">PREFERENCES</span>
+                        <h1>Settings</h1>
+                        <p>Manage application preferences.</p>
+                    </div>
+                </div>
+
+                <div class="content-card settings-card">
+
+                    <div class="settings-row">
+
+                        <div>
+                            <h3>Appearance</h3>
+                            <p>Choose your preferred interface theme.</p>
+                        </div>
+
+                        <select id="themeSelect">
+                            <option value="light">Light Mode</option>
+                            <option value="dark">Dark Mode</option>
+                            <option value="system">System Default</option>
+                        </select>
+
+                    </div>
+
+                    <div class="settings-row">
+
+                        <div>
+                            <h3>Application</h3>
+                            <p>SDLC VuLenseR — Secure Requirements Analyzer</p>
+                        </div>
+
+                        <span class="version-label">Version 2.0.0</span>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </div>
+
+
+        <footer class="app-footer">
+            <span>SDLC VuLenseR</span>
+            <span>AI-powered secure requirement analysis</span>
+        </footer>
+
+    </main>
+
+</div>
+
+
+<div class="toast" id="toast"></div>
+
+<script src="js/script.js"></script>
+
+</body>
+</html>
