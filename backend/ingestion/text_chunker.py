@@ -7,13 +7,6 @@ def chunk_text(
     chunk_size: int = 1200,
     overlap: int = 200
 ) -> list[str]:
-    """
-    Divide document text into readable chunks.
-
-    - Preserves paragraph and line boundaries where possible.
-    - Avoids cutting words in half.
-    - Maintains a small overlap between chunks.
-    """
 
     if not text or not text.strip():
         return []
@@ -22,87 +15,68 @@ def chunk_text(
         raise ValueError("chunk_size must be greater than zero.")
 
     if overlap < 0 or overlap >= chunk_size:
-        raise ValueError(
-            "overlap must be non-negative and smaller than chunk_size."
-        )
+        raise ValueError("Overlap must be smaller than chunk size.")
 
-    # Split document into non-empty lines.
-    lines = [
-        line.strip()
-        for line in text.splitlines()
-        if line.strip()
-    ]
+    # Normalize text without removing paragraph boundaries.
+    text = text.replace("\r\n", "\n").replace("\r", "\n")
+    text = re.sub(r"[ \t]+", " ", text)
+    text = re.sub(r"\n{3,}", "\n\n", text).strip()
 
-    # Split exceptionally long lines at word boundaries.
-    prepared_lines = []
-
-    for line in lines:
-
-        while len(line) > chunk_size:
-
-            split_position = line.rfind(
-                " ",
-                0,
-                chunk_size
-            )
-
-            if split_position <= 0:
-                split_position = chunk_size
-
-            prepared_lines.append(
-                line[:split_position].strip()
-            )
-
-            line = line[split_position:].strip()
-
-        if line:
-            prepared_lines.append(line)
+    if len(text) <= chunk_size:
+        return [text]
 
     chunks = []
-    current = ""
+    start = 0
 
-    for line in prepared_lines:
+    while start < len(text):
 
-        candidate = (
-            current + "\n" + line
-            if current
-            else line
-        )
+        end = min(start + chunk_size, len(text))
 
-        if len(candidate) <= chunk_size:
-            current = candidate
-            continue
+        if end < len(text):
 
-        if current:
-            chunks.append(current.strip())
+            # Prefer paragraph, line, sentence and word boundaries.
+            minimum = start + int(chunk_size * 0.70)
 
-        # Preserve a small overlap from the previous chunk.
-        if current and overlap > 0:
-            overlap_text = current[-overlap:]
+            boundaries = [
+                text.rfind("\n\n", minimum, end),
+                text.rfind("\n", minimum, end),
+                text.rfind(". ", minimum, end),
+                text.rfind("? ", minimum, end),
+                text.rfind("! ", minimum, end),
+                text.rfind(" ", minimum, end)
+            ]
 
-            # Avoid starting the next chunk in the middle of a word.
-            first_space = overlap_text.find(" ")
+            boundary = max(boundaries)
 
-            if first_space != -1:
-                overlap_text = overlap_text[first_space + 1:]
+            if boundary >= minimum:
+                if text.startswith("\n\n", boundary):
+                    end = boundary + 2
+                else:
+                    end = boundary + 1
 
-            current = overlap_text.strip()
-        else:
-            current = ""
+        chunk = text[start:end].strip()
 
-        candidate = (
-            current + "\n" + line
-            if current
-            else line
-        )
+        if chunk:
+            chunks.append(chunk)
 
-        # A line may still be too large after adding overlap.
-        if len(candidate) > chunk_size:
-            current = line[:chunk_size].strip()
-        else:
-            current = candidate
+        if end >= len(text):
+            break
 
-    if current.strip():
-        chunks.append(current.strip())
+        # Calculate the next starting position with overlap.
+        next_start = max(start + 1, end - overlap)
+
+        # Avoid starting in the middle of a word.
+        while (
+            next_start < end
+            and next_start > 0
+            and not text[next_start - 1].isspace()
+            and not text[next_start].isspace()
+        ):
+            next_start += 1
+
+        while next_start < len(text) and text[next_start].isspace():
+            next_start += 1
+
+        start = next_start
 
     return chunks
