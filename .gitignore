@@ -1,0 +1,8 @@
+venv/
+.venv/
+__pycache__/
+*.pyc
+.env
+backend/data/
+chroma_db_backup/
+package-lock.json
