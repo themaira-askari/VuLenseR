@@ -13,94 +13,133 @@ OWASP_PATH = BASE_DIR / "knowledge_base" / "owasp"
 
 
 # --------------------------------------------------
-# 2. LOAD WORD DOCUMENT
+# 2. EXTRACT PARAGRAPHS AND TABLES IN ORDER
+# --------------------------------------------------
+
+def extract_document_blocks(document):
+
+    content = []
+
+    body = document.element.body
+
+    for element in body.iterchildren():
+
+        # Extract paragraphs.
+        if element.tag.endswith("}p"):
+
+            from docx.text.paragraph import Paragraph
+
+            paragraph = Paragraph(element, document)
+            paragraph_text = paragraph.text.strip()
+
+            if paragraph_text:
+                content.append(paragraph_text)
+
+        # Extract tables.
+        elif element.tag.endswith("}tbl"):
+
+            from docx.table import Table
+
+            table = Table(element, document)
+
+            for row in table.rows:
+
+                cells = []
+                seen_cells = set()
+
+                for cell in row.cells:
+
+                    cell_id = id(cell._tc)
+
+                    if cell_id in seen_cells:
+                        continue
+
+                    seen_cells.add(cell_id)
+
+                    cell_text = cell.text.strip()
+
+                    if cell_text:
+                        cells.append(cell_text)
+
+                if cells:
+                    content.append(" | ".join(cells))
+
+    return content
+
+
+# --------------------------------------------------
+# 3. LOAD WORD DOCUMENT
 # --------------------------------------------------
 
 def load_docx(file_path: Path) -> str:
 
     document = Document(file_path)
 
-    text = []
+    content = extract_document_blocks(document)
 
-    # Extract normal paragraphs.
-    for paragraph in document.paragraphs:
+    # Extract headers and footers.
+    for section in document.sections:
 
-        paragraph_text = paragraph.text.strip()
+        header_text = section.header.paragraphs
+        footer_text = section.footer.paragraphs
 
-        if paragraph_text:
-            text.append(paragraph_text)
+        for paragraph in header_text + footer_text:
 
-    # Extract table content.
-    for table in document.tables:
+            text = paragraph.text.strip()
 
-        for row in table.rows:
+            if text and text not in content:
+                content.append(text)
 
-            cells = []
-
-            for cell in row.cells:
-
-                cell_text = cell.text.strip()
-
-                if cell_text and cell_text not in cells:
-                    cells.append(cell_text)
-
-            if cells:
-                text.append(" | ".join(cells))
-
-    return "\n".join(text)
+    return "\n\n".join(content)
 
 
 # --------------------------------------------------
-# 3. LOAD MARKDOWN DOCUMENT
+# 4. LOAD MARKDOWN DOCUMENT
 # --------------------------------------------------
 
 def load_markdown(file_path: Path) -> str:
 
-    return file_path.read_text(
-        encoding="utf-8"
-    )
+    return file_path.read_text(encoding="utf-8")
 
 
 # --------------------------------------------------
-# 4. LOAD ALL OWASP DOCUMENTS
+# 5. LOAD ALL OWASP DOCUMENTS
 # --------------------------------------------------
 
 def load_owasp_documents() -> list:
 
     documents = []
 
-    # Load ASVS Word documents.
+    # Load ASVS DOCX files.
     asvs_folder = OWASP_PATH / "asvs"
 
     if asvs_folder.exists():
 
-        for file_path in sorted(
-            asvs_folder.glob("*.docx")
-        ):
+        for file_path in sorted(asvs_folder.glob("*.docx")):
 
             content = load_docx(file_path)
 
             if content.strip():
+
                 documents.append({
-                    "source": file_path.name,
+                    "source": str(file_path.relative_to(OWASP_PATH)).replace("\\", "/"),
                     "category": "ASVS",
                     "content": content
                 })
 
-    # Load OWASP Top 10 Markdown documents.
+    # Load Top 10 Markdown files.
     top10_folder = OWASP_PATH / "top10"
 
     if top10_folder.exists():
 
-        for file_path in sorted(
-            top10_folder.glob("*.md")
-        ):
+        for file_path in sorted(top10_folder.glob("*.md")):
 
             content = load_markdown(file_path)
 
             if content.strip():
+
                 documents.append({
-                    "source": file_path.name,
+                    "source": str(file_path.relative_to(OWASP_PATH)).replace("\\", "/"),
                     "category": "Top 10",
                     "content": content
                 })
@@ -108,19 +147,20 @@ def load_owasp_documents() -> list:
     if not documents:
         raise FileNotFoundError(
             "No OWASP documents found. "
-            "Check the knowledge_base/owasp folders."
+            "Check knowledge_base/owasp folders."
         )
 
-    print(
-        f"Loaded {len(documents)} OWASP documents."
-    )
+    print("\n========== DOCUMENT LOADING ==========")
 
     for document in documents:
+
         print(
-            "Loaded:",
-            document["source"],
-            "| Category:",
-            document["category"]
+            f"{document['source']} | "
+            f"{document['category']} | "
+            f"{len(document['content'])} characters"
         )
+
+    print("Total documents:", len(documents))
+    print("======================================\n")
 
     return documents
