@@ -3,7 +3,7 @@
    RAG-Based Requirement Analyzer
 ========================================= */
 
-const API_BASE_URL = "http://127.0.0.1:8000";
+const API_BASE_URL = window.VULENSER_API_BASE || "http://127.0.0.1:8000";
 
 const HISTORY_KEY = "vulenser_analysis_history";
 const THEME_KEY = "vulenser_theme";
@@ -14,7 +14,7 @@ const $$ = (selector) => document.querySelectorAll(selector);
 const getElement = (id) => document.getElementById(id);
 
 let currentAnalysis = null;
-let analysisHistory = loadHistory();
+let analysisHistory = [];
 
 
 /* =========================================
@@ -35,6 +35,10 @@ document.addEventListener("DOMContentLoaded", () => {
     updateCharacterCount();
 
     createIcons();
+
+    window.addEventListener("vulenser:authenticated", () => {
+        refreshUserHistory();
+    });
 
     console.log("SDLC VuLenseR initialized.");
 
@@ -79,33 +83,42 @@ function initializeNavigation() {
 }
 
 
+
 function showView(viewName) {
 
-    $$(".nav-item[data-view]").forEach((item) => {
+    const user = window.VULENSER_USER;
+    const isAdmin = user?.role === "admin";
 
+    // Prevent users from opening Admin Panel
+    if (viewName === "admin" && !isAdmin) {
+        viewName = "dashboard";
+    }
+
+    // Prevent admins from opening User Workspace pages
+    if (isAdmin && viewName !== "admin") {
+        viewName = "admin";
+    }
+
+    $$(".nav-item[data-view]").forEach(item => {
         item.classList.toggle(
             "active",
             item.dataset.view === viewName
         );
-
     });
 
-
-    $$(".page-section").forEach((section) => {
-
+    $$(".page-section").forEach(section => {
         section.classList.toggle(
             "active",
             section.id === viewName
         );
-
     });
-
 
     const names = {
         dashboard: "Dashboard",
         analyzer: "Requirement Analyzer",
         history: "Analysis History",
         reports: "Reports",
+        admin: "Admin Panel",
         settings: "Settings"
     };
 
@@ -119,8 +132,10 @@ function showView(viewName) {
 
     if (viewName === "history") updateHistory();
     if (viewName === "reports") updateReports();
-
 }
+
+window.showView = showView;
+
 
 
 /* =========================================
@@ -277,7 +292,7 @@ async function analyzeRequirement() {
 
     try {
 
-        const response = await fetch(
+        const response = await window.vulenserAuthFetch(
             `${API_BASE_URL}/analyze`,
             {
                 method: "POST",
@@ -337,7 +352,7 @@ async function analyzeRequirement() {
         };
 
 
-        saveAnalysis(currentAnalysis);
+        await saveAnalysis(currentAnalysis);
 
         displayResults(currentAnalysis);
 
@@ -598,50 +613,57 @@ function hideResults() {
 ========================================= */
 
 function loadHistory() {
-
     try {
-
-        const data = JSON.parse(
-            localStorage.getItem(HISTORY_KEY) || "[]"
-        );
-
+        const userId = window.VULENSER_USER?.id || "guest";
+        const data = JSON.parse(localStorage.getItem(`${HISTORY_KEY}_${userId}`) || "[]");
         return Array.isArray(data) ? data : [];
-
-    } catch {
-
-        return [];
-
-    }
-
+    } catch { return []; }
 }
-
 
 function saveHistory() {
-
     try {
-
-        localStorage.setItem(
-            HISTORY_KEY,
-            JSON.stringify(analysisHistory)
-        );
-
+        const userId = window.VULENSER_USER?.id || "guest";
+        localStorage.setItem(`${HISTORY_KEY}_${userId}`, JSON.stringify(analysisHistory));
     } catch (error) {
-
         console.error("History saving error:", error);
-
-        showToast("Unable to save analysis history.");
-
+        showToast("Unable to cache analysis history.");
     }
-
 }
 
-
-function saveAnalysis(analysis) {
-
+async function saveAnalysis(analysis) {
     analysisHistory.unshift(analysis);
-
     saveHistory();
+    try {
+        await window.vulenserAuthFetch(`${API_BASE_URL}/analyses`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ original_requirement: analysis.original_requirement, result: {
+                refined_requirement: analysis.refined_requirement,
+                violations: analysis.violations,
+                missing_requirements: analysis.missing_requirements,
+                overall_score: analysis.overall_score
+            }})
+        });
+    } catch (error) { console.error("Server history save failed:", error); }
+}
 
+async function refreshUserHistory() {
+    try {
+        const response = await window.vulenserAuthFetch(`${API_BASE_URL}/analyses`);
+        const data = await response.json();
+        if (response.ok && Array.isArray(data.analyses)) {
+            analysisHistory = data.analyses;
+            saveHistory();
+            updateDashboard();
+            updateHistory();
+            updateReports();
+        } else {
+            analysisHistory = loadHistory();
+        }
+    } catch (error) {
+        console.error("Unable to load saved analyses:", error);
+        analysisHistory = loadHistory();
+    }
 }
 
 
@@ -674,6 +696,8 @@ function initializeHistory() {
         analysisHistory = [];
 
         saveHistory();
+        window.vulenserAuthFetch(`${API_BASE_URL}/analyses`, { method: "DELETE" })
+            .catch(error => console.error("Server history clear failed:", error));
 
         updateHistory();
         updateDashboard();
