@@ -23,7 +23,111 @@
 
 <body>
 
-<div class="app-container">
+
+<div class="auth-shell" id="authShell">
+    <div class="auth-card">
+
+        <div class="auth-brand">
+            <div class="brand-icon">
+                <i data-lucide="shield-check"></i>
+            </div>
+            <div>
+                <h1>VuLenseR</h1>
+                <p>Secure Requirements AI</p>
+            </div>
+        </div>
+
+        <!-- Portal Selection -->
+        <div class="portal-selection" id="portalSelection">
+            <h2>Welcome to VuLenseR</h2>
+            <p>Select your portal to continue</p>
+
+            <button type="button" id="userPortal">
+                <i data-lucide="user-round"></i>
+                Continue as User
+            </button>
+
+            <button type="button" id="adminPortal">
+                <i data-lucide="shield-check"></i>
+                Continue as Admin
+            </button>
+        </div>
+
+        <!-- Back Button -->
+        <button type="button" id="backToPortals" class="hidden">
+            ← Back to portal selection
+        </button>
+
+        <!-- Admin Notice -->
+        <p id="adminLoginNotice" class="hidden">
+            Administrator sign in only. Admin accounts are created separately.
+        </p>
+
+        <!-- Authentication Tabs -->
+        <div class="auth-tabs hidden">
+            <button class="auth-tab active" id="showLogin">
+                Sign In
+            </button>
+            <button class="auth-tab" id="showRegister">
+                Create Account
+            </button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="loginForm" class="auth-form hidden">
+            <h2>Welcome back</h2>
+            <p class="auth-muted">Sign in to continue to your workspace.</p>
+
+            <label for="loginEmail">Email address</label>
+            <input id="loginEmail" type="email"
+                autocomplete="username" required placeholder="you@example.com">
+
+            <label for="loginPassword">Password</label>
+            <input id="loginPassword" type="password"
+                autocomplete="current-password" required placeholder="Enter your password">
+
+            <button class="primary-button auth-submit" type="submit">
+                Sign In
+            </button>
+            <p class="auth-error" id="loginError"></p>
+        </form>
+
+        <!-- Registration Form -->
+        <form id="registerForm" class="auth-form hidden">
+            <h2>Create your account</h2>
+            <p class="auth-muted">Register as a VuLenseR user.</p>
+
+            <label for="registerName">Full name</label>
+            <input id="registerName" type="text" autocomplete="name"
+                minlength="2" maxlength="80" required placeholder="Your full name">
+
+            <label for="registerEmail">Email address</label>
+            <input id="registerEmail" type="email"
+                autocomplete="email" required placeholder="you@example.com">
+
+            <label for="registerPassword">Password</label>
+            <input id="registerPassword" type="password"
+                autocomplete="new-password" minlength="8"
+                required placeholder="At least 8 characters">
+
+            <button class="primary-button auth-submit" type="submit">
+                Create Account
+            </button>
+            <p class="auth-error" id="registerError"></p>
+        </form>
+
+        <p class="auth-footnote">
+            Administrator accounts are created separately by the system owner.
+        </p>
+        
+
+    </div>
+</div>
+
+
+</div>
+
+<div class="app-container hidden" id="appContainer">
 
     <aside class="sidebar" id="sidebar">
 
@@ -62,6 +166,11 @@
                 <span>Reports</span>
             </button>
 
+            <button class="nav-item hidden" data-view="admin" id="adminNav">
+                <i data-lucide="shield-check"></i>
+                <span>Admin Panel</span>
+            </button>
+
         </nav>
 
         <div class="sidebar-bottom">
@@ -72,12 +181,12 @@
             </button>
 
             <div class="profile">
-                <div class="profile-avatar">V</div>
-
+                <div class="profile-avatar" id="profileAvatar">V</div>
                 <div class="profile-info">
-                    <strong>Security Analyst</strong>
-                    <span>Workspace</span>
+                    <strong id="profileName">User</strong>
+                    <span id="profileRole">Workspace</span>
                 </div>
+                <button class="logout-button" id="logoutButton" title="Sign out"><i data-lucide="log-out"></i></button>
             </div>
 
         </div>
@@ -517,6 +626,45 @@
             </section>
 
 
+            <!-- ADMIN PANEL -->
+            <section class="page-section" id="admin">
+                <div class="page-heading">
+                    <div>
+                        <span class="eyebrow">SYSTEM ADMINISTRATION</span>
+                        <h1>Admin Dashboard</h1>
+                        <p>Manage the RAG knowledge base and monitor requirement analysis activity.</p>
+                    </div>
+                    <button class="secondary-button" id="refreshAdmin"><i data-lucide="refresh-cw"></i> Refresh Overview</button>
+                </div>
+
+                <div class="stats-grid admin-stats">
+                    <div class="stat-card"><div class="stat-top"><span>Total Analyses</span><div class="stat-icon purple"><i data-lucide="file-search"></i></div></div><h2 id="adminTotalAnalyses">0</h2><span class="stat-description">Requirements analyzed</span></div>
+                    <div class="stat-card"><div class="stat-top"><span>Violations Found</span><div class="stat-icon red"><i data-lucide="shield-alert"></i></div></div><h2 id="adminTotalViolations">0</h2><span class="stat-description">Across saved analyses</span></div>
+                    <div class="stat-card"><div class="stat-top"><span>Security Flaws / Gaps</span><div class="stat-icon orange"><i data-lucide="shield-check"></i></div></div><h2 id="adminTotalSecurityFlaws">0</h2><span class="stat-description">Missing security findings</span></div>
+                    <div class="stat-card"><div class="stat-top"><span>Knowledge Documents</span><div class="stat-icon blue"><i data-lucide="book-open-check"></i></div></div><h2 id="adminDocumentCount">0</h2><span class="stat-description">Available reference files</span></div>
+                    <div class="stat-card"><div class="stat-top"><span>Indexed Chunks</span><div class="stat-icon green"><i data-lucide="database"></i></div></div><h2 id="adminIndexedChunks">0</h2><span class="stat-description">Stored in ChromaDB</span></div>
+                </div>
+
+                <div class="content-card admin-card">
+                    <div class="card-heading"><div><h3>Knowledge Base Management</h3><p>Upload, replace or remove supported security reference documents.</p></div><button class="secondary-button" id="refreshDocuments"><i data-lucide="refresh-cw"></i> Refresh Documents</button></div>
+                    <div class="document-upload-row">
+                        <select id="documentCategory"><option value="ASVS">ASVS (.docx)</option><option value="Top 10">OWASP Top 10 (.md)</option></select>
+                        <input id="knowledgeDocument" type="file" accept=".docx,.md">
+                        <label class="replace-check"><input id="replaceDocument" type="checkbox"> Replace if filename exists</label>
+                        <button class="primary-button" id="uploadDocumentButton"><i data-lucide="upload"></i> Upload & Index</button>
+                    </div>
+                    <div class="admin-table-wrap"><table class="admin-table admin-doc-table"><thead><tr><th>Document</th><th>Category</th><th>Version</th><th>Format</th><th>Extract</th><th>Chunking</th><th>Chunks</th><th>Embeddings</th><th>Index Status</th><th>Action</th></tr></thead><tbody id="adminDocumentsTable"><tr><td colspan="10">Loading documents...</td></tr></tbody></table></div>
+                    <p class="admin-note">Current ingestion supports ASVS Word documents (.docx) and OWASP Top 10 Markdown files (.md). A successful upload or deletion rebuilds the ChromaDB knowledge base.</p>
+                    <div class="admin-index-actions"><span id="indexingSummary">Checking knowledge base status...</span><button class="secondary-button" id="retryIndexing"><i data-lucide="refresh-cw"></i> Re-index Knowledge Base</button></div>
+                </div>
+
+                <div class="content-card admin-card">
+                    <div class="card-heading"><div><h3>Recent Analysis Activity</h3><p>Latest requirement analyses submitted by users.</p></div></div>
+                    <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Requirement</th><th>User</th><th>Violations</th><th>Security Flaws / Gaps</th><th>Score</th><th>Date</th></tr></thead><tbody id="adminRecentActivity"><tr><td colspan="6">Loading activity...</td></tr></tbody></table></div>
+                    <p class="admin-note">Security flaw / gap count is based on the current analysis service's <code>missing_requirements</code> findings.</p>
+                </div>
+            </section>
+
             <!-- SETTINGS -->
 
             <section class="page-section" id="settings">
@@ -576,6 +724,8 @@
 
 <div class="toast" id="toast"></div>
 
+<script src="js/auth.js"></script>
+<script src="js/admin.js"></script>
 <script src="js/script.js"></script>
 
 </body>
