@@ -1,33 +1,65 @@
 
 import hashlib
-import chromadb
 from pathlib import Path
+
+import chromadb
 
 from ingestion.document_loader import load_owasp_documents
 from ingestion.text_chunker import chunk_text
 
 
-# --------------------------------------------------
-# 1. DATABASE SETUP
-# --------------------------------------------------
+# ==================================================
+# 1. DATABASE CONFIGURATION
+# ==================================================
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 DB_PATH = BASE_DIR / "chroma_db"
 
-client = chromadb.PersistentClient(path=str(DB_PATH))
-
 COLLECTION_NAME = "owasp_security_knowledge"
 
-collection = client.get_or_create_collection(
-    name=COLLECTION_NAME
-)
+_client = None
+_collection = None
+
+BATCH_SIZE = 16
 
 
-# --------------------------------------------------
-# 2. STORE DOCUMENTS
-# --------------------------------------------------
+def get_collection():
+
+    global _client, _collection
+
+    if _collection is None:
+
+        _client = chromadb.PersistentClient(
+            path=str(DB_PATH)
+        )
+
+        _collection = _client.get_or_create_collection(
+            name=COLLECTION_NAME
+        )
+
+    return _collection
+
+
+# ==================================================
+# 2. GENERATE STABLE CHUNK IDS
+# ==================================================
+
+def generate_chunk_id(source, index):
+
+    source_hash = hashlib.sha1(
+        str(source).encode("utf-8")
+    ).hexdigest()[:12]
+
+    return f"{source_hash}_{index}"
+
+
+# ==================================================
+# 3. STORE AND SYNCHRONIZE OWASP DOCUMENTS
+# ==================================================
 
 def store_owasp_documents():
+
+    collection = get_collection()
 
     documents = load_owasp_documents()
 
@@ -35,95 +67,262 @@ def store_owasp_documents():
     all_ids = []
     all_metadata = []
 
+    valid_sources = set()
+    source_chunk_counts = {}
+
+    # Generate chunks from all documents
     for document in documents:
 
         content = document.get("content", "")
-        source = document.get("source", "Unknown")
-        category = document.get("category", "General")
+        source = str(document.get("source", "Unknown"))
+        category = str(document.get("category", "General"))
 
-        if not content.strip():
+        if not content or not content.strip():
             continue
+
+        valid_sources.add((source, category))
 
         chunks = chunk_text(content)
 
-        for chunk_index, chunk in enumerate(chunks):
+        source_chunk_counts[source] = 0
 
-            if not chunk.strip():
+        for index, chunk in enumerate(chunks):
+
+            if not chunk or not chunk.strip():
                 continue
 
-            # Stable ID based on source and chunk position.
-            source_hash = hashlib.sha1(
-                source.encode("utf-8")
-            ).hexdigest()[:12]
-
-            chunk_id = f"{source_hash}_{chunk_index}"
+            chunk_id = generate_chunk_id(
+                source,
+                index
+            )
 
             all_chunks.append(chunk)
             all_ids.append(chunk_id)
 
             all_metadata.append({
-                "source": str(source),
-                "category": str(category)
+                "source": source,
+                "category": category,
+                "chunk_index": index
             })
+
+            source_chunk_counts[source] += 1
 
     if not all_chunks:
         raise ValueError(
-            "No OWASP document chunks were found."
+            "No valid OWASP document chunks generated."
         )
 
-    collection.upsert(
-        documents=all_chunks,
-        ids=all_ids,
-        metadatas=all_metadata
+    if len(all_ids) != len(set(all_ids)):
+        raise ValueError(
+            "Duplicate chunk IDs detected."
+        )
+
+    total_chunks = len(all_chunks)
+
+    # Show document-wise chunk counts
+    print("\n========== DOCUMENT CHUNKS ==========")
+
+    for source, count in source_chunk_counts.items():
+        print(f"{source}: {count} chunks")
+
+    print("Total generated:", total_chunks)
+    print("Unique IDs:", len(set(all_ids)))
+
+    # Index in small batches
+    print("\nStarting ChromaDB indexing...", flush=True)
+
+    for start in range(0, total_chunks, BATCH_SIZE):
+
+        end = min(
+            start + BATCH_SIZE,
+            total_chunks
+        )
+
+        collection.upsert(
+            ids=all_ids[start:end],
+            documents=all_chunks[start:end],
+            metadatas=all_metadata[start:end]
+        )
+
+        print(
+            f"Indexed: {end}/{total_chunks}",
+            flush=True
+        )
+
+    # Remove outdated records after successful indexing
+    existing = collection.get(
+        include=["metadatas"]
     )
 
-    print(
-        f"Successfully stored {len(all_chunks)} OWASP chunks."
-    )
+    current_ids = set(all_ids)
+    stale_ids = []
 
-    return len(all_chunks)
+    for old_id, metadata in zip(
+        existing.get("ids", []),
+        existing.get("metadatas", [])
+    ):
+
+        metadata = metadata or {}
+
+        old_source = metadata.get("source", "")
+        old_category = metadata.get("category", "")
+
+        old_source_key = (
+            old_source,
+            old_category
+        )
+
+        # Remove records from old sources and old chunk positions
+        if (
+            old_source_key not in valid_sources
+            or old_id not in current_ids
+        ):
+            stale_ids.append(old_id)
+
+    # Delete outdated records
+    if stale_ids:
+
+        print(
+            f"Removing {len(stale_ids)} outdated chunks...",
+            flush=True
+        )
+
+        collection.delete(
+            ids=stale_ids
+        )
+
+    # Final database verification
+    final_count = collection.count()
+
+    print("\n========== OWASP INDEXING REPORT ==========")
+
+    print("Documents loaded:", len(documents))
+    print("Sources indexed:", len(valid_sources))
+    print("Generated chunks:", total_chunks)
+    print("Old chunks removed:", len(stale_ids))
+    print("Database records:", final_count)
+
+    if final_count == total_chunks:
+
+        print("SUCCESS: Database is synchronized.")
+
+    else:
+
+        print(
+            "WARNING: Database count does not match "
+            "generated chunks."
+        )
+
+    print("===========================================\n")
+
+    return total_chunks
 
 
-# --------------------------------------------------
-# 3. REBUILD KNOWLEDGE BASE
-# --------------------------------------------------
+# ==================================================
+# 4. REBUILD KNOWLEDGE BASE
+# ==================================================
 
 def rebuild_owasp_knowledge_base():
-    """
-    Delete the old collection and ingest all documents again.
-    Use this after changing document loading or chunking.
-    """
 
-    global collection
-
-    try:
-        client.delete_collection(
-            name=COLLECTION_NAME
-        )
-    except Exception:
-        pass
-
-    collection = client.get_or_create_collection(
-        name=COLLECTION_NAME
-    )
+    # Safely synchronize the existing collection.
+    # Does not delete the entire database.
 
     return store_owasp_documents()
 
 
-# --------------------------------------------------
-# 4. CATEGORY-BASED RETRIEVAL
-# --------------------------------------------------
+# ==================================================
+# 5. FORMAT RETRIEVED RESULTS
+# ==================================================
+
+def format_results(results):
+
+    retrieved = []
+
+    documents = results.get("documents", [[]])[0]
+    metadatas = results.get("metadatas", [[]])[0]
+    distances = results.get("distances", [[]])[0]
+
+    for index, document in enumerate(documents):
+
+        metadata = (
+            metadatas[index]
+            if index < len(metadatas) and metadatas[index]
+            else {}
+        )
+
+        distance = (
+            distances[index]
+            if index < len(distances)
+            else None
+        )
+
+        retrieved.append({
+
+            "content": document,
+
+            "source": metadata.get(
+                "source",
+                "Unknown"
+            ),
+
+            "category": metadata.get(
+                "category",
+                "General"
+            ),
+
+            "chunk_index": metadata.get(
+                "chunk_index"
+            ),
+
+            "distance": distance
+        })
+
+    return retrieved
+
+
+# ==================================================
+# 6. CATEGORY-BASED RETRIEVAL
+# ==================================================
 
 def query_category(
     query: str,
     category: str,
-    n_results: int
+    n_results: int = 6
 ) -> list:
 
-    results = collection.query(
-        query_texts=[query],
-        n_results=n_results,
+    collection = get_collection()
+
+    if not query or not query.strip():
+        raise ValueError("Search query cannot be empty.")
+
+    if n_results <= 0:
+        raise ValueError("n_results must be greater than zero.")
+
+    category_records = collection.get(
         where={"category": category},
+        include=["metadatas"]
+    )
+
+    category_count = len(
+        category_records.get("ids", [])
+    )
+
+    if category_count == 0:
+        return []
+
+    results = collection.query(
+
+        query_texts=[query.strip()],
+
+        n_results=min(
+            n_results,
+            category_count
+        ),
+
+        where={
+            "category": category
+        },
+
         include=[
             "documents",
             "metadatas",
@@ -131,59 +330,40 @@ def query_category(
         ]
     )
 
-    retrieved = []
-
-    documents = results.get("documents", [[]])[0]
-    metadatas = results.get("metadatas", [[]])[0]
-    distances = results.get("distances", [[]])[0]
-
-    for index, document in enumerate(documents):
-
-        metadata = (
-            metadatas[index]
-            if index < len(metadatas) and metadatas[index]
-            else {}
-        )
-
-        distance = (
-            distances[index]
-            if index < len(distances)
-            else None
-        )
-
-        retrieved.append({
-            "content": document,
-            "source": metadata.get("source", "Unknown"),
-            "category": metadata.get("category", "General"),
-            "distance": distance
-        })
-
-    return retrieved
+    return format_results(results)
 
 
-
-# --------------------------------------------------
-# 5. GENERAL RETRIEVAL
-# --------------------------------------------------
+# ==================================================
+# 7. GENERAL RETRIEVAL
+# ==================================================
 
 def query_all_categories(
     query: str,
-    n_results: int
+    n_results: int = 6
 ) -> list:
 
-    total_chunks = collection.count()
+    collection = get_collection()
 
-    if total_chunks == 0:
+    if not query or not query.strip():
+        raise ValueError("Search query cannot be empty.")
+
+    if n_results <= 0:
+        raise ValueError("n_results must be greater than zero.")
+
+    total = collection.count()
+
+    if total == 0:
         return []
 
-    result_count = min(
-        n_results,
-        total_chunks
-    )
-
     results = collection.query(
-        query_texts=[query],
-        n_results=result_count,
+
+        query_texts=[query.strip()],
+
+        n_results=min(
+            n_results,
+            total
+        ),
+
         include=[
             "documents",
             "metadatas",
@@ -191,39 +371,12 @@ def query_all_categories(
         ]
     )
 
-    retrieved = []
-
-    documents = results.get("documents", [[]])[0]
-    metadatas = results.get("metadatas", [[]])[0]
-    distances = results.get("distances", [[]])[0]
-
-    for index, document in enumerate(documents):
-
-        metadata = (
-            metadatas[index]
-            if index < len(metadatas) and metadatas[index]
-            else {}
-        )
-
-        distance = (
-            distances[index]
-            if index < len(distances)
-            else None
-        )
-
-        retrieved.append({
-            "content": document,
-            "source": metadata.get("source", "Unknown"),
-            "category": metadata.get("category", "General"),
-            "distance": distance
-        })
-
-    return retrieved
+    return format_results(results)
 
 
-# --------------------------------------------------
-# 6. RETRIEVE RELEVANT DOCUMENTATION
-# --------------------------------------------------
+# ==================================================
+# 8. RETRIEVE RELEVANT OWASP DOCUMENTATION
+# ==================================================
 
 def retrieve_relevant_chunks(
     query: str,
@@ -231,57 +384,27 @@ def retrieve_relevant_chunks(
 ) -> list:
 
     if not query or not query.strip():
-        raise ValueError("Search query cannot be empty.")
+
+        raise ValueError(
+            "Search query cannot be empty."
+        )
+
+    if n_results <= 0:
+
+        raise ValueError(
+            "n_results must be greater than zero."
+        )
+
+    collection = get_collection()
 
     if collection.count() == 0:
+
         raise RuntimeError(
             "OWASP knowledge base is empty. "
             "Run document ingestion first."
         )
 
-    # Balanced retrieval.
-    asvs_chunks = query_category(
-        query,
-        "ASVS",
-        4
+    return query_all_categories(
+        query=query.strip(),
+        n_results=n_results
     )
-
-    top10_chunks = query_category(
-        query,
-        "Top 10",
-        2
-    )
-
-    combined = asvs_chunks + top10_chunks
-
-    # Fill remaining slots if one category has fewer documents.
-    if len(combined) < n_results:
-
-        additional_chunks = query_all_categories(
-            query,
-            n_results
-        )
-
-        existing = {
-            (
-                item["source"],
-                item["content"]
-            )
-            for item in combined
-        }
-
-        for item in additional_chunks:
-
-            key = (
-                item["source"],
-                item["content"]
-            )
-
-            if key not in existing:
-                combined.append(item)
-                existing.add(key)
-
-            if len(combined) >= n_results:
-                break
-
-    return combined[:n_results]
