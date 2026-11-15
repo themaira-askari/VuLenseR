@@ -1216,6 +1216,35 @@ textarea::placeholder {
 
 }
 
+.portal-selection {
+    text-align: center;
+    margin-bottom: 22px;
+}
+
+.portal-selection button {
+    width: 100%;
+    padding: 14px;
+    margin-top: 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--card);
+    color: var(--text);
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.portal-selection button:hover {
+    border-color: var(--primary);
+}
+
+#backToPortals {
+    margin-bottom: 12px;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    color: var(--primary);
+}
+
 @media (max-width: 430px) {
 
     .stats-grid {
@@ -1241,3 +1270,50 @@ textarea::placeholder {
     }
 
 }
+
+/* AUTHENTICATION */
+.auth-shell { min-height: 100vh; display: grid; place-items: center; padding: 24px; background: var(--background); }
+.auth-card { width: min(100%, 440px); background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 34px; box-shadow: var(--shadow); }
+.auth-brand { display:flex; align-items:center; gap:13px; margin-bottom:28px; }
+.auth-brand h1 { font:800 22px Inter,sans-serif; }
+.auth-brand p,.auth-muted,.auth-footnote { color:var(--muted); font-size:12px; margin-top:4px; }
+.auth-tabs { display:grid; grid-template-columns:1fr 1fr; padding:4px; background:var(--surface-soft); border-radius:10px; margin-bottom:26px; }
+.auth-tab { border:0; border-radius:8px; padding:10px; background:transparent; color:var(--muted); font-weight:700; }
+.auth-tab.active { background:var(--surface); color:var(--primary); box-shadow:var(--shadow); }
+.auth-form { display:flex; flex-direction:column; gap:10px; }
+.auth-form h2 { font:700 22px Inter,sans-serif; margin-bottom:0; }
+.auth-form label { font-size:12px; font-weight:700; margin-top:8px; }
+.auth-form input,.admin-create-user input,.admin-create-user select,.document-upload-row select { width:100%; padding:12px 13px; border:1px solid var(--border); border-radius:9px; background:var(--surface-soft); color:var(--text); outline:none; }
+.auth-form input:focus,.admin-create-user input:focus { border-color:var(--primary); }
+.auth-submit { width:100%; justify-content:center; margin-top:12px; }
+.auth-error { min-height:18px; color:var(--red); font-size:12px; }
+.auth-footnote { text-align:center; margin-top:20px; line-height:1.5; }
+.logout-button { border:0; background:transparent; color:var(--muted); padding:7px; border-radius:8px; }
+.logout-button:hover { color:var(--red); background:var(--red-bg); }
+.logout-button svg { width:17px; }
+.admin-card { margin-bottom:22px; }
+.admin-create-user,.document-upload-row { display:grid; grid-template-columns:1.1fr 1.2fr 1fr .8fr auto; gap:9px; margin:18px 0; align-items:center; }
+.document-upload-row { grid-template-columns: .8fr 1.3fr 1fr auto; }
+.document-upload-row input[type=file] { min-width:0; color:var(--muted); font-size:11px; }
+.replace-check { display:flex; align-items:center; gap:7px; color:var(--muted); font-size:11px; white-space:nowrap; }
+.admin-table-wrap { overflow-x:auto; }
+.admin-table { width:100%; border-collapse:collapse; min-width:650px; font-size:12px; }
+.admin-table th,.admin-table td { padding:13px 11px; border-bottom:1px solid var(--border); text-align:left; }
+.admin-table th { color:var(--muted); font-size:10px; text-transform:uppercase; letter-spacing:.7px; }
+.admin-table td { color:var(--text); }
+.admin-table button { border:1px solid var(--border); background:var(--surface-soft); color:var(--text); padding:7px 9px; border-radius:7px; margin-right:5px; font-size:10px; }
+.admin-table button.danger { color:var(--red); }
+.status-pill { display:inline-block; padding:4px 8px; border-radius:20px; font-size:10px; background:var(--green-bg); color:var(--green); }
+.status-pill.inactive { background:var(--red-bg); color:var(--red); }
+.admin-note { color:var(--muted); font-size:11px; line-height:1.6; margin-top:12px; }
+@media(max-width:900px){ .admin-create-user,.document-upload-row { grid-template-columns:1fr 1fr; } }
+@media(max-width:600px){ .auth-card { padding:24px; } .admin-create-user,.document-upload-row { grid-template-columns:1fr; } }
+
+/* Focused SDLC VuLenseR admin dashboard */
+.admin-stats { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.admin-doc-table { min-width: 1050px; }
+.admin-index-actions { display:flex; align-items:center; justify-content:space-between; gap:14px; margin-top:16px; color:var(--muted); font-size:12px; }
+.admin-card .card-heading { gap:12px; }
+.admin-card .card-heading p { max-width:720px; }
+@media(max-width:1100px){ .admin-stats { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+@media(max-width:700px){ .admin-stats { grid-template-columns:repeat(2,minmax(0,1fr)); } .admin-index-actions { align-items:stretch; flex-direction:column; } }
