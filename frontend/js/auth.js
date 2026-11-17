@@ -112,6 +112,203 @@ function selectPortal(role) {
 }
 
 // ===============================
+// PROFILE RENDERING (per-user, stored on the server)
+// ===============================
+
+function userInitial(user) {
+    return (user?.name || "U").trim().charAt(0).toUpperCase();
+}
+
+function renderUserProfile(user) {
+    if (!user) return;
+    const isAdmin = user.role === "admin";
+
+    document.querySelectorAll("[data-user-name]").forEach(el => { el.textContent = user.name; });
+    document.querySelectorAll("[data-user-email]").forEach(el => { el.textContent = user.email; });
+
+    const profileName = document.getElementById("profileName");
+    if (profileName) profileName.textContent = user.name;
+
+    const role = document.getElementById("profileRole");
+    if (role) role.textContent = isAdmin ? "Administrator" : "User Workspace";
+
+    // Picture: if a photo exists show ONLY the photo (no letter); otherwise show the initial.
+    document.querySelectorAll("[data-avatar]").forEach(el => {
+        if (user.avatar) {
+            el.textContent = "";
+            el.style.backgroundImage = `url("${user.avatar}")`;
+            el.classList.add("has-photo");
+        } else {
+            el.textContent = userInitial(user);
+            el.style.backgroundImage = "";
+            el.classList.remove("has-photo");
+        }
+    });
+
+    const removeBtn = document.getElementById("removePhotoButton");
+    if (removeBtn) removeBtn.disabled = !user.avatar;
+    const photoText = document.getElementById("photoBtnText");
+    if (photoText) photoText.textContent = user.avatar ? "Change photo" : "Upload photo";
+}
+
+function setProfileMessage(id, text, ok) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = text || "";
+    el.classList.toggle("ok", !!ok);
+    el.classList.toggle("err", !ok && !!text);
+}
+
+function openProfileModal() {
+    const user = window.VULENSER_USER;
+    if (!user) return;
+    document.getElementById("profilePopover")?.classList.add("hidden");
+    document.getElementById("profileNameInput").value = user.name || "";
+    document.getElementById("profileEmailInput").value = user.email || "";
+    document.getElementById("profileRoleInput").value = user.role === "admin" ? "Administrator" : "User";
+    document.getElementById("profileSinceInput").value = user.created_at
+        ? new Date(user.created_at).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })
+        : "—";
+    document.getElementById("currentPasswordInput").value = "";
+    document.getElementById("newPasswordInput").value = "";
+    setProfileMessage("profileMessage", "");
+    setProfileMessage("passwordMessage", "");
+    renderUserProfile(user);
+    document.getElementById("profileEditor")?.classList.remove("hidden");
+    document.getElementById("profileNameInput")?.focus();
+}
+
+function closeProfileModal() {
+    document.getElementById("profileEditor")?.classList.add("hidden");
+}
+
+async function profileRequest(path, options = {}) {
+    const response = await window.vulenserAuthFetch(`${AUTH_API_BASE}/auth/${path}`, options);
+    let data = {};
+    try { data = await response.json(); } catch (e) { data = {}; }
+    if (!response.ok) {
+        const detail = Array.isArray(data.detail) ? data.detail.map(i => i.msg).join(" ") : data.detail;
+        throw new Error(detail || `Request failed (HTTP ${response.status}).`);
+    }
+    return data;
+}
+
+function applyUpdatedUser(user) {
+    window.VULENSER_USER = user;
+    renderUserProfile(user);
+}
+
+function setupProfileUI() {
+    const popover = document.getElementById("profilePopover");
+    const profileOpen = document.getElementById("profileOpen");
+
+    const toggleMenu = () => popover?.classList.toggle("hidden");
+    profileOpen?.addEventListener("click", e => { e.stopPropagation(); toggleMenu(); });
+    profileOpen?.addEventListener("keydown", e => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); toggleMenu(); }
+    });
+    popover?.addEventListener("click", e => e.stopPropagation());
+
+    // click outside / Escape closes menu and modal
+    document.addEventListener("click", () => popover?.classList.add("hidden"));
+    document.addEventListener("keydown", e => {
+        if (e.key === "Escape") { popover?.classList.add("hidden"); closeProfileModal(); }
+    });
+
+    document.getElementById("menuProfile")?.addEventListener("click", openProfileModal);
+    document.getElementById("menuSettings")?.addEventListener("click", () => {
+        popover?.classList.add("hidden");
+        if (typeof window.showView === "function") window.showView("settings");
+    });
+
+    document.getElementById("closeProfileEditor")?.addEventListener("click", closeProfileModal);
+    document.getElementById("cancelProfileEditor")?.addEventListener("click", closeProfileModal);
+    document.getElementById("profileEditor")?.addEventListener("click", e => {
+        if (e.target.id === "profileEditor") closeProfileModal();
+    });
+
+    // Save name
+    document.getElementById("saveProfileEditor")?.addEventListener("click", async event => {
+        const button = event.currentTarget;
+        const name = document.getElementById("profileNameInput").value.trim();
+        if (name.length < 2) { setProfileMessage("profileMessage", "Please enter your full name (at least 2 characters).", false); return; }
+        button.disabled = true;
+        try {
+            const data = await profileRequest("profile", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name })
+            });
+            applyUpdatedUser(data.user);
+            setProfileMessage("profileMessage", "Profile updated.", true);
+        } catch (err) {
+            setProfileMessage("profileMessage", err.message, false);
+        } finally { button.disabled = false; }
+    });
+
+    // Upload picture (saved immediately after choosing a file)
+    document.getElementById("profilePhotoInput")?.addEventListener("change", async event => {
+        const input = event.currentTarget;
+        const file = input.files?.[0];
+        if (!file) return;
+        if (!/^image\/(png|jpeg|webp)$/.test(file.type) || file.size > 2 * 1024 * 1024) {
+            setProfileMessage("profileMessage", "Choose a PNG, JPG or WEBP image up to 2 MB.", false);
+            input.value = "";
+            return;
+        }
+        const form = new FormData();
+        form.append("file", file);
+        try {
+            const data = await profileRequest("avatar", { method: "POST", body: form });
+            applyUpdatedUser(data.user);
+            setProfileMessage("profileMessage", "Profile picture updated.", true);
+        } catch (err) {
+            setProfileMessage("profileMessage", err.message, false);
+        } finally { input.value = ""; }
+    });
+
+    // Remove picture
+    document.getElementById("removePhotoButton")?.addEventListener("click", async () => {
+        try {
+            const data = await profileRequest("avatar", { method: "DELETE" });
+            applyUpdatedUser(data.user);
+            setProfileMessage("profileMessage", "Profile picture removed.", true);
+        } catch (err) {
+            setProfileMessage("profileMessage", err.message, false);
+        }
+    });
+
+    // Change password
+    document.getElementById("changePasswordButton")?.addEventListener("click", async event => {
+        const button = event.currentTarget;
+        const current = document.getElementById("currentPasswordInput").value;
+        const next = document.getElementById("newPasswordInput").value;
+        if (!current || next.length < 8) { setProfileMessage("passwordMessage", "Enter your current password and a new one with at least 8 characters.", false); return; }
+        button.disabled = true;
+        try {
+            await profileRequest("change-password", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ current_password: current, new_password: next })
+            });
+            document.getElementById("currentPasswordInput").value = "";
+            document.getElementById("newPasswordInput").value = "";
+            setProfileMessage("passwordMessage", "Password updated successfully.", true);
+        } catch (err) {
+            setProfileMessage("passwordMessage", err.message, false);
+        } finally { button.disabled = false; }
+    });
+
+    // Logout
+    document.getElementById("logoutButton")?.addEventListener("click", () => {
+        popover?.classList.add("hidden");
+        closeProfileModal();
+        clearAuthSession();
+        showAuthScreen();
+    });
+}
+
+// ===============================
 // DASHBOARD MANAGEMENT
 // ===============================
 
@@ -122,21 +319,8 @@ function showAuthenticatedApp(user) {
 
     const isAdmin = user.role === "admin";
 
-    // Update profile
-    const name = document.getElementById("profileName");
-    const role = document.getElementById("profileRole");
-    const avatar = document.getElementById("profileAvatar");
-
-    if (name) name.textContent = user.name;
-
-    if (role) {
-        role.textContent = isAdmin ? "Administrator" : "User Workspace";
-    }
-
-    if (avatar) {
-        avatar.textContent = (user.name || "U")
-            .trim().charAt(0).toUpperCase();
-    }
+    // Update name / role / picture everywhere (sidebar, menu, profile modal)
+    renderUserProfile(user);
 
     // Show only the navigation items for the current role
     document.querySelectorAll(".nav-item[data-view]").forEach(item => {
@@ -335,12 +519,7 @@ document.addEventListener("DOMContentLoaded", () => {
             );
         });
 
-    // Logout
-    document.getElementById("logoutButton")
-        ?.addEventListener("click", () => {
-            clearAuthSession();
-            showAuthScreen();
-        });
+    setupProfileUI();
 
     // Check existing session
     const token = getAuthToken();
