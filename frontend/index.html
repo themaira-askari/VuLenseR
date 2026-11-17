@@ -1,27 +1,158 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>SDLC VuLenseR — Requirement Analyzer</title>
+    <!-- Apply the saved theme before first paint (default: dark) so there is no light flash -->
+    <script>
+        (function () {
+            var t = "dark";
+            try {
+                var saved = localStorage.getItem("vulenser_theme");
+                if (saved === "light" || saved === "dark") t = saved;
+                else if (saved === "system" && window.matchMedia("(prefers-color-scheme: light)").matches) t = "light";
+            } catch (e) {}
+            document.documentElement.setAttribute("data-theme", t);
+        })();
+    </script>
+
+    <title>SDLC VuLenser — Requirement Analyzer</title>
 
     <meta name="description"
         content="AI-powered RAG-based software requirement analysis platform">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap"
-        rel="stylesheet">
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Manrope:wght@600;700;800&display=swap"
+    rel="stylesheet">
 
     <link rel="stylesheet" href="css/style.css">
+    <!-- ADDED: SDLC VuLenser theme + lamp login styling -->
+<link rel="stylesheet" href="css/login-theme.css">
+<!-- ADDED: app-wide SDLC VuLenser theme (dashboard, admin panel, colors, fonts). Loads last. -->
+<link rel="stylesheet" href="css/app-theme.css">
+<!-- ADDED: landing page styling (scoped to #landingPage). Loads last. -->
+<link rel="stylesheet" href="css/landing.css">
 
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
 <body>
+
+<!-- ========== LANDING PAGE (shown first; Sign In / Get Started reveals the login below) ========== -->
+<div id="landingPage">
+<canvas id="ldFx"></canvas><div id="ldBar"></div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<symbol id="ld-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v5c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10V6z"/></symbol>
+<symbol id="ld-shc" viewBox="0 0 24 24"><path d="M12 3l8 3v5c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10V6z"/><path d="M8.5 12l2.5 2.5L15.5 10"/></symbol>
+<symbol id="ld-alert" viewBox="0 0 24 24"><path d="M12 3l10 17H2z"/><path d="M12 10v4M12 17v.5"/></symbol>
+<symbol id="ld-file" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 12h6M9 16h6"/></symbol>
+<symbol id="ld-db" viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></symbol>
+<symbol id="ld-chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></symbol>
+<symbol id="ld-dl" viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></symbol>
+<symbol id="ld-hist" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5M12 8v5l3 2"/></symbol>
+<symbol id="ld-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+<symbol id="ld-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-5-5"/></symbol>
+<symbol id="ld-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+<symbol id="ld-bug" viewBox="0 0 24 24"><rect x="8" y="7" width="8" height="13" rx="4"/><path d="M9 7a3 3 0 0 1 6 0M4 12h4M16 12h4M5 19l3-2M19 19l-3-2M5 6l3 2M19 6l-3 2"/></symbol>
+<symbol id="ld-spark" viewBox="0 0 24 24"><path d="M12 3l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"/></symbol>
+</svg>
+
+<header class="nav"><div class="wrap">
+  <a href="#ldTop" class="logo"><span class="lm"><svg class="ico"><use href="#ld-shc"/></svg></span>SDLC VuLenser</a>
+  <div class="nc">
+    <a class="go btn btn-g btn-s" href="#">Sign In</a>
+    <a class="go btn btn-p btn-s" href="#">Get Started</a>
+  </div>
+</div></header>
+
+<main id="ldTop">
+<section class="hero" id="ldHero">
+  <div class="cg" id="ldCg"></div>
+  <div class="wrap">
+    <div>
+      <span class="pill"><i></i>AI-powered secure requirements</span>
+      <h1>Secure your <span class="ty gt"><span id="ldTyped"></span><span class="caret"></span></span></h1>
+      <p class="lead">AI finds security flaws in your requirements, backed by OWASP evidence.</p>
+      <div class="row">
+        <a class="go btn btn-p" href="#">Get Started <svg class="ico"><use href="#ld-arrow"/></svg></a>
+        <a class="btn btn-g" href="#ldHow">See how</a>
+      </div>
+    </div>
+
+    <div class="vis" aria-hidden="true"><div class="stage"><div class="tilt" id="ldTilt">
+      <div class="floor"></div>
+      <svg class="ln" viewBox="0 0 560 440">
+        <g fill="none" stroke="rgba(56,189,248,.55)" stroke-width="1.6" stroke-dasharray="6 6">
+          <path d="M122 220H225"/><path d="M335 220C370 220 370 101 400 101"/><path d="M335 220H400"/><path d="M335 220C370 220 370 339 400 339"/>
+        </g>
+        <g fill="#38bdf8">
+          <circle r="4"><animateMotion dur="1.8s" repeatCount="indefinite" path="M122 220H225"/></circle>
+          <circle r="4"><animateMotion dur="2.2s" begin=".3s" repeatCount="indefinite" path="M335 220C370 220 370 101 400 101"/></circle>
+          <circle r="4"><animateMotion dur="2s" begin=".6s" repeatCount="indefinite" path="M335 220H400"/></circle>
+          <circle r="4"><animateMotion dur="2.2s" begin=".9s" repeatCount="indefinite" path="M335 220C370 220 370 339 400 339"/></circle>
+        </g>
+      </svg>
+      <div class="doc"><div class="scan"></div><small>REQUIREMENT</small><div class="dl"></div><div class="dl f"></div><div class="dl"></div><div class="dl" style="width:60%"></div></div>
+      <div class="core"><svg class="ico"><use href="#ld-spark"/></svg></div>
+      <div class="chip" style="left:236px;top:84px">OWASP</div>
+      <div class="chip" style="left:244px;top:322px;animation-delay:-2s">ASVS</div>
+      <div class="fd hi" style="top:70px"><div class="ic"><svg class="ico"><use href="#ld-alert"/></svg></div><div><b>No rate limit</b><span>HIGH</span></div></div>
+      <div class="fd md" style="top:170px;animation-delay:.7s"><div class="ic"><svg class="ico"><use href="#ld-lock"/></svg></div><div><b>Weak password</b><span>MEDIUM</span></div></div>
+      <div class="fd ok" style="top:308px;animation-delay:1.4s"><div class="ic"><svg class="ico"><use href="#ld-shc"/></svg></div><div><b>Add MFA</b><span>FIX</span></div></div>
+    </div></div></div>
+  </div>
+</section>
+
+<div class="mq"><div class="mt">
+  <span><svg class="ico"><use href="#ld-shield"/></svg>OWASP Top 10</span><span><svg class="ico"><use href="#ld-file"/></svg>ASVS</span><span><svg class="ico"><use href="#ld-search"/></svg>RAG</span><span><svg class="ico"><use href="#ld-db"/></svg>ChromaDB</span><span><svg class="ico"><use href="#ld-bug"/></svg>Injection</span><span><svg class="ico"><use href="#ld-lock"/></svg>Broken Auth</span><span><svg class="ico"><use href="#ld-alert"/></svg>Access Control</span><span><svg class="ico"><use href="#ld-hist"/></svg>Logging</span>
+  <span><svg class="ico"><use href="#ld-shield"/></svg>OWASP Top 10</span><span><svg class="ico"><use href="#ld-file"/></svg>ASVS</span><span><svg class="ico"><use href="#ld-search"/></svg>RAG</span><span><svg class="ico"><use href="#ld-db"/></svg>ChromaDB</span><span><svg class="ico"><use href="#ld-bug"/></svg>Injection</span><span><svg class="ico"><use href="#ld-lock"/></svg>Broken Auth</span><span><svg class="ico"><use href="#ld-alert"/></svg>Access Control</span><span><svg class="ico"><use href="#ld-hist"/></svg>Logging</span>
+</div></div>
+
+<section class="s"><div class="wrap stats">
+  <div class="stat rv"><b class="gs"><i class="cnt" data-to="4">0</i></b><span>Quality checks</span></div>
+  <div class="stat rv"><b class="gs"><i class="cnt" data-to="10">0</i></b><span>OWASP risks</span></div>
+  <div class="stat rv"><b class="gs"><i class="cnt" data-to="3">0</i></b><span>Steps to a report</span></div>
+</div></section>
+
+<section class="s" id="ldHow" style="padding-top:0"><div class="wrap">
+  <div class="sh rv"><h2>Three steps. <span class="gs">Zero guesswork.</span></h2></div>
+  <div class="flow">
+    <div class="step rv"><div class="orb"><svg class="ico"><use href="#ld-file"/></svg></div><h3>Add</h3><p>Paste or upload</p></div>
+    <div class="step rv"><div class="orb"><svg class="ico"><use href="#ld-spark"/></svg></div><h3>Analyze</h3><p>AI + OWASP evidence</p></div>
+    <div class="step rv"><div class="orb"><svg class="ico"><use href="#ld-chart"/></svg></div><h3>Report</h3><p>Score and fixes</p></div>
+  </div>
+</div></section>
+
+<section class="s" style="padding-top:0"><div class="wrap">
+  <div class="sh rv"><h2>Built to <span class="gs">catch it all</span></h2></div>
+  <div class="fg">
+    <div class="card rv"><div class="it"><svg class="ico"><use href="#ld-chart"/></svg></div><h3>Quality score</h3><p>Clear, complete, testable</p></div>
+    <div class="card rv"><div class="it"><svg class="ico"><use href="#ld-bug"/></svg></div><h3>Flaw detection</h3><p>Ranked by severity</p></div>
+    <div class="card rv"><div class="it"><svg class="ico"><use href="#ld-shc"/></svg></div><h3>Missing controls</h3><p>Gaps you forgot</p></div>
+    <div class="card rv"><div class="it"><svg class="ico"><use href="#ld-db"/></svg></div><h3>OWASP evidence</h3><p>Every finding backed</p></div>
+    <div class="card rv"><div class="it"><svg class="ico"><use href="#ld-dl"/></svg></div><h3>Export</h3><p>Share in one click</p></div>
+    <div class="card rv"><div class="it"><svg class="ico"><use href="#ld-hist"/></svg></div><h3>History</h3><p>Revisit any analysis</p></div>
+  </div>
+</div></section>
+
+<section><div class="wrap"><div class="cta rv"><div class="cin">
+  <h2>Ready to <span class="gs">secure</span> your requirements?</h2>
+  <div class="row" style="justify-content:center">
+    <a class="go btn btn-p" href="#">Get Started <svg class="ico"><use href="#ld-arrow"/></svg></a>
+    <a class="go btn btn-g" href="#">Sign In</a>
+  </div>
+</div></div></div></section>
+</main>
+
+<footer><div class="wrap"><span>SDLC VuLenser</span><span>AI-powered secure requirement analysis</span></div></footer>
+</div>
+<!-- ========== END LANDING PAGE ========== -->
+
 
 
 <div class="auth-shell" id="authShell">
@@ -29,17 +160,18 @@
 
         <div class="auth-brand">
             <div class="brand-icon">
-                <i data-lucide="shield-check"></i>
+                <img src="assets/logo.png" alt="SDLC VuLenser logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <i data-lucide="shield-check" style="display:none;"></i>
             </div>
             <div>
-                <h1>VuLenseR</h1>
+                <h1>SDLC VuLenser</h1>
                 <p>Secure Requirements AI</p>
             </div>
         </div>
 
         <!-- Portal Selection -->
         <div class="portal-selection" id="portalSelection">
-            <h2>Welcome to VuLenseR</h2>
+            <h2>Welcome to SDLC VuLenser</h2>
             <p>Select your portal to continue</p>
 
             <button type="button" id="userPortal">
@@ -95,7 +227,7 @@
         <!-- Registration Form -->
         <form id="registerForm" class="auth-form hidden">
             <h2>Create your account</h2>
-            <p class="auth-muted">Register as a VuLenseR user.</p>
+            <p class="auth-muted">Register as an SDLC VuLenser user.</p>
 
             <label for="registerName">Full name</label>
             <input id="registerName" type="text" autocomplete="name"
@@ -129,70 +261,180 @@
 
 <div class="app-container hidden" id="appContainer">
 
-    <aside class="sidebar" id="sidebar">
 
-        <div class="brand">
-            <div class="brand-icon">
-                <i data-lucide="shield-check"></i>
-            </div>
+<aside class="sidebar" id="sidebar">
 
-            <div class="brand-info">
-                <h2>VuLenseR</h2>
-                <span>Secure Requirements AI</span>
-            </div>
+<!-- Brand + Sidebar Toggle -->
+<div class="brand">
+
+    <div class="brand-left">
+
+        <div class="brand-icon">
+            <img
+                src="assets/logo.png"
+                alt="SDLC VuLenser logo"
+                onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+            >
+            <i data-lucide="shield-check" style="display:none;"></i>
         </div>
 
-        <div class="workspace-label">WORKSPACE</div>
+        <div class="brand-info">
+            <h2>SDLC VuLenser</h2>
+        </div>
 
-        <nav class="navigation">
+    </div>
 
-            <button class="nav-item active" data-view="dashboard">
-                <i data-lucide="layout-dashboard"></i>
-                <span>Dashboard</span>
-            </button>
+    <button
+        class="icon-button sidebar-toggle"
+        id="sidebarToggle"
+        type="button"
+        title="Collapse sidebar"
+        aria-label="Collapse sidebar"
+    >
+        <i data-lucide="panel-left-close"></i>
+    </button>
 
-            <button class="nav-item" data-view="analyzer">
-                <i data-lucide="scan-search"></i>
-                <span>Requirement Analyzer</span>
-            </button>
+</div>
 
-            <button class="nav-item" data-view="history">
-                <i data-lucide="history"></i>
-                <span>Analysis History</span>
-            </button>
+    <!-- Workspace -->
+    <div class="workspace-label">WORKSPACE</div>
 
-            <button class="nav-item" data-view="reports">
-                <i data-lucide="file-chart-column"></i>
-                <span>Reports</span>
-            </button>
+    <nav class="navigation">
 
-            <button class="nav-item hidden" data-view="admin" id="adminNav">
-                <i data-lucide="shield-check"></i>
-                <span>Admin Panel</span>
-            </button>
+        <button class="nav-item active" data-view="dashboard">
+            <i data-lucide="layout-dashboard"></i>
+            <span>Dashboard</span>
+        </button>
 
-        </nav>
+        <button class="nav-item" data-view="analyzer">
+            <i data-lucide="scan-search"></i>
+            <span>Requirement Analyzer</span>
+        </button>
 
-        <div class="sidebar-bottom">
+        <button class="nav-item" data-view="history">
+            <i data-lucide="history"></i>
+            <span>Analysis History</span>
+        </button>
 
-            <button class="nav-item" data-view="settings">
-                <i data-lucide="settings-2"></i>
-                <span>Settings</span>
-            </button>
+        <button class="nav-item" data-view="reports">
+            <i data-lucide="file-chart-column"></i>
+            <span>Reports</span>
+        </button>
 
-            <div class="profile">
-                <div class="profile-avatar" id="profileAvatar">V</div>
-                <div class="profile-info">
-                    <strong id="profileName">User</strong>
-                    <span id="profileRole">Workspace</span>
-                </div>
-                <button class="logout-button" id="logoutButton" title="Sign out"><i data-lucide="log-out"></i></button>
+        <button class="nav-item hidden" data-view="admin" id="adminNav">
+            <i data-lucide="shield-check"></i>
+            <span>Admin Panel</span>
+        </button>
+
+    </nav>
+
+    <!-- Sidebar Bottom -->
+    <div class="sidebar-bottom">
+
+        <div
+            class="profile"
+            id="profileOpen"
+            role="button"
+            tabindex="0"
+            aria-label="Open profile">
+
+            <div class="avatar avatar-sm profile-avatar" id="profileAvatar" data-avatar></div>
+
+            <div class="profile-info">
+                <strong id="profileName">User</strong>
+                <span id="profileRole">Workspace</span>
             </div>
 
         </div>
 
-    </aside>
+    </div>
 
+</aside>
+
+            
+
+<!-- ACCOUNT MENU (Profile / Settings / Log out) -->
+<div id="profilePopover" class="account-menu hidden" role="menu" aria-label="Account menu">
+  <div class="account-menu-head">
+    <div class="avatar avatar-md" data-avatar></div>
+    <div class="account-menu-id">
+      <strong data-user-name>User</strong>
+      <span data-user-email></span>
+    </div>
+  </div>
+  <div class="account-menu-sep"></div>
+  <button class="account-menu-item" id="menuProfile" role="menuitem"><i data-lucide="circle-user-round"></i><span>Profile</span></button>
+  <button class="account-menu-item" id="menuSettings" role="menuitem"><i data-lucide="settings"></i><span>Settings</span></button>
+  <div class="account-menu-sep"></div>
+  <button class="account-menu-item danger" id="logoutButton" role="menuitem"><i data-lucide="log-out"></i><span>Log out</span></button>
+</div>
+
+<!-- PROFILE MODAL -->
+<div id="profileEditor" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="profileModalTitle">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3 id="profileModalTitle">Profile</h3>
+      <button class="icon-button" id="closeProfileEditor" type="button" aria-label="Close"><i data-lucide="x"></i></button>
+    </div>
+
+    <div class="modal-body">
+      <div class="profile-photo-row">
+        <div class="avatar avatar-xl" id="profileModalAvatar" data-avatar></div>
+        <div class="profile-photo-actions">
+          <input id="profilePhotoInput" class="visually-hidden" type="file" accept="image/png,image/jpeg,image/webp">
+          <div class="photo-buttons">
+            <label for="profilePhotoInput" class="primary-button upload-btn"><i data-lucide="camera"></i><span id="photoBtnText">Upload photo</span></label>
+            <button type="button" class="secondary-button" id="removePhotoButton"><i data-lucide="trash-2"></i> Remove</button>
+          </div>
+          <p class="field-hint">PNG, JPG or WEBP · max 2 MB</p>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="profileNameInput">Full name</label>
+        <input id="profileNameInput" type="text" maxlength="80" autocomplete="name" placeholder="Your name">
+      </div>
+
+      <div class="field-grid">
+        <div class="field">
+          <label for="profileEmailInput">Email</label>
+          <input id="profileEmailInput" type="email" readonly disabled>
+        </div>
+        <div class="field">
+          <label for="profileRoleInput">Account type</label>
+          <input id="profileRoleInput" type="text" readonly disabled>
+        </div>
+      </div>
+      <div class="field">
+        <label for="profileSinceInput">Member since</label>
+        <input id="profileSinceInput" type="text" readonly disabled>
+      </div>
+
+      <p class="modal-message" id="profileMessage" aria-live="polite"></p>
+
+      <div class="modal-actions">
+        <button class="secondary-button" id="cancelProfileEditor" type="button">Cancel</button>
+        <button class="primary-button" id="saveProfileEditor" type="button">Save changes</button>
+      </div>
+
+      <div class="modal-divider"></div>
+
+      <h4 class="modal-subtitle">Change password</h4>
+      <div class="field">
+        <label for="currentPasswordInput">Current password</label>
+        <input id="currentPasswordInput" type="password" autocomplete="current-password">
+      </div>
+      <div class="field">
+        <label for="newPasswordInput">New password <small>(min. 8 characters)</small></label>
+        <input id="newPasswordInput" type="password" autocomplete="new-password" minlength="8">
+      </div>
+      <p class="modal-message" id="passwordMessage" aria-live="polite"></p>
+      <div class="modal-actions">
+        <button class="secondary-button" id="changePasswordButton" type="button">Update password</button>
+      </div>
+    </div>
+  </div>
+</div>
 
     <main class="main-content">
 
@@ -204,26 +446,14 @@
                     <i data-lucide="menu"></i>
                 </button>
 
-                <div class="breadcrumb">
-                    <span>Workspace</span>
-                    <i data-lucide="chevron-right"></i>
-                    <strong id="breadcrumbTitle">Dashboard</strong>
-                </div>
 
             </div>
 
             <div class="topbar-right">
 
-                <div class="system-status">
-                    <span class="status-dot"></span>
-                    System Ready
-                </div>
-
                 <button class="icon-button" id="themeToggle">
                     <i data-lucide="moon"></i>
                 </button>
-
-                <div class="topbar-avatar">V</div>
 
             </div>
 
@@ -240,7 +470,7 @@
 
                     <div>
                         <span class="eyebrow">OVERVIEW</span>
-                        <h1>Welcome to VuLenseR</h1>
+                        <h1>Welcome to SDLC VuLenser</h1>
                         <p>Analyze requirements and discover security weaknesses.</p>
                     </div>
 
@@ -317,9 +547,8 @@
                         <h2>Build better and more secure software requirements.</h2>
 
                         <p>
-                            Detect requirement issues, identify missing security
-                            controls and generate improved requirements using
-                            OWASP-based evidence.
+                           Detect requirement issues and identify missing security
+controls using OWASP-based evidence.
                         </p>
 
                         <button class="primary-button" data-go="analyzer">
@@ -375,7 +604,7 @@
 
                         <div>
                             <h3>Enter Your Requirement</h3>
-                            <p>Write or paste your software requirement.</p>
+                            <p>Write, paste or upload a short software requirement document (1–2 pages recommended).</p>
                         </div>
 
                     </div>
@@ -390,13 +619,18 @@
                         <textarea
                             id="requirementInput"
                             placeholder="Example: The system should allow users to register using their email and password..."
-                            minlength="5"
-                            required
                         ></textarea>
 
 
+                        <div class="document-input-row">
+                            <label for="requirementDocument">
+    Or upload document (PDF, DOCX, TXT; max 20 KB)
+</label>
+                            <input id="requirementDocument" type="file" accept=".pdf,.docx,.txt">
+                        </div>
+
                         <div class="input-footer">
-                            <span>Be specific for better results.</span>
+                            <span></span>
                             <span id="characterCount">0 characters</span>
                         </div>
 
@@ -432,7 +666,7 @@
 
                     <h3>Analyzing your requirement</h3>
 
-                    <p>
+                    <p id="loadingMessage">
                         Retrieving relevant OWASP evidence and evaluating
                         requirement quality.
                     </p>
@@ -440,7 +674,7 @@
                     <div class="loading-steps">
                         <span>Requirement Analysis</span>
                         <span>Security Evidence</span>
-                        <span>Final Refinement</span>
+                        <span>Security Flaw Detection</span>
                     </div>
 
                 </div>
@@ -503,65 +737,36 @@
                     </div>
 
 
-                    <!-- REFINED -->
+                    <!-- REQUIREMENT QUALITY -->
 
                     <div class="content-card result-card">
-
                         <div class="result-section-heading">
-                            <div class="result-icon green">
-                                <i data-lucide="check-circle-2"></i>
+                            <div class="result-icon">
+                                <i data-lucide="clipboard-check"></i>
                             </div>
-
                             <div>
-                                <h3>Refined Requirement</h3>
-                                <p>Improved, clear and testable requirement.</p>
+                                <h3>Requirement Quality</h3>
                             </div>
                         </div>
-
-                        <div id="refinedRequirement"
-                            class="markdown-content refined-output"></div>
-
+                        <div id="qualityAttributes" class="quality-attributes-grid"></div>
+                        <div id="qualityFindingsList" class="finding-list"></div>
                     </div>
 
-
-                    <!-- VIOLATIONS -->
+                    <!-- SECURITY FINDINGS -->
 
                     <div class="content-card result-card">
-
                         <div class="result-section-heading">
                             <div class="result-icon red">
                                 <i data-lucide="shield-alert"></i>
                             </div>
-
                             <div>
-                                <h3>Violations / Issues</h3>
-                                <p>Identified requirement and security issues.</p>
+                                <h3>Security Flaws</h3>
                             </div>
                         </div>
-
                         <div id="violationsList" class="finding-list"></div>
-
                     </div>
 
-
-                    <!-- MISSING -->
-
-                    <div class="content-card result-card">
-
-                        <div class="result-section-heading">
-                            <div class="result-icon purple">
-                                <i data-lucide="list-plus"></i>
-                            </div>
-
-                            <div>
-                                <h3>Missing Requirements</h3>
-                                <p>Important details and controls that are missing.</p>
-                            </div>
-                        </div>
-
-                        <div id="missingRequirementsList" class="finding-list"></div>
-
-                    </div>
+                  
 
                 </div>
 
@@ -698,7 +903,7 @@
 
                         <div>
                             <h3>Application</h3>
-                            <p>SDLC VuLenseR — Secure Requirements Analyzer</p>
+                            <p>SDLC VuLenser — Secure Requirements Analyzer</p>
                         </div>
 
                         <span class="version-label">Version 2.0.0</span>
@@ -713,7 +918,7 @@
 
 
         <footer class="app-footer">
-            <span>SDLC VuLenseR</span>
+            <span>SDLC VuLenser</span>
             <span>AI-powered secure requirement analysis</span>
         </footer>
 
@@ -727,6 +932,9 @@
 <script src="js/auth.js"></script>
 <script src="js/admin.js"></script>
 <script src="js/script.js"></script>
-
+<!-- ADDED: lamp login animation (sirf visual effects) -->
+<script src="js/login-lamp.js"></script>
+<!-- ADDED: landing page behaviour -->
+<script src="js/landing.js"></script>
 </body>
 </html>
