@@ -1,5 +1,5 @@
 /* =========================================
-   SDLC VuLenseR
+   SDLC VuLenser
    RAG-Based Requirement Analyzer
 ========================================= */
 
@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
         refreshUserHistory();
     });
 
-    console.log("SDLC VuLenseR initialized.");
+    console.log("SDLC VuLenser initialized.");
 
 });
 
@@ -55,6 +55,7 @@ function createIcons() {
 /* =========================================
    NAVIGATION
 ========================================= */
+
 
 function initializeNavigation() {
 
@@ -74,13 +75,52 @@ function initializeNavigation() {
 
     });
 
+    // Mobile Sidebar Toggle
     getElement("menuToggle")?.addEventListener("click", () => {
 
         getElement("sidebar")?.classList.toggle("sidebar-open");
 
     });
 
+    // Desktop Sidebar Collapse / Expand
+    const sidebarToggle = getElement("sidebarToggle");
+    const appContainer = getElement("appContainer");
+
+    sidebarToggle?.addEventListener("click", () => {
+
+        if (!appContainer) return;
+
+        const isCollapsed = appContainer.classList.toggle(
+            "sidebar-collapsed"
+        );
+
+        const icon = sidebarToggle.querySelector("i");
+
+        if (icon) {
+            icon.setAttribute(
+                "data-lucide",
+                isCollapsed ? "panel-left-open" : "panel-left-close"
+            );
+        }
+
+        sidebarToggle.setAttribute(
+            "title",
+            isCollapsed ? "Expand sidebar" : "Collapse sidebar"
+        );
+
+        sidebarToggle.setAttribute(
+            "aria-label",
+            isCollapsed ? "Expand sidebar" : "Collapse sidebar"
+        );
+
+        if (typeof createIcons === "function") {
+            createIcons();
+        }
+
+    });
+
 }
+
 
 
 
@@ -94,8 +134,8 @@ function showView(viewName) {
         viewName = "dashboard";
     }
 
-    // Prevent admins from opening User Workspace pages
-    if (isAdmin && viewName !== "admin") {
+    // Prevent admins from opening User Workspace pages (Settings is allowed for everyone)
+    if (isAdmin && viewName !== "admin" && viewName !== "settings") {
         viewName = "admin";
     }
 
@@ -220,10 +260,31 @@ function initializeAnalyzer() {
 
     const form = getElement("analyzeForm");
     const input = getElement("requirementInput");
+    const documentInput = getElement("requirementDocument");
 
     if (!form || !input) return;
 
     input.addEventListener("input", updateCharacterCount);
+
+    // Maximum file size: 20 KB
+    documentInput?.addEventListener("change", function () {
+
+        const file = this.files?.[0];
+
+        if (!file) return;
+
+        const MAX_FILE_SIZE = 20 * 1024;
+
+        if (file.size > MAX_FILE_SIZE) {
+
+            showToast("File size must not exceed 20 KB.");
+
+            this.value = "";
+
+            return;
+        }
+
+    });
 
     form.addEventListener("submit", async (event) => {
 
@@ -236,6 +297,10 @@ function initializeAnalyzer() {
     getElement("clearRequirement")?.addEventListener("click", () => {
 
         input.value = "";
+
+        if (documentInput) {
+            documentInput.value = "";
+        }
 
         updateCharacterCount();
         hideResults();
@@ -273,9 +338,25 @@ async function analyzeRequirement() {
     const input = getElement("requirementInput");
     const button = getElement("analyzeButton");
 
-    const requirement = input?.value.trim();
+   const requirement = input?.value.trim();
+const documentInput = getElement("requirementDocument");
+const selectedDocument = documentInput?.files?.[0];
 
-    if (!requirement || requirement.length < 5) {
+// Maximum upload size: 20 KB
+const MAX_FILE_SIZE = 20 * 1024;
+
+if (selectedDocument && selectedDocument.size > MAX_FILE_SIZE) {
+
+    showToast("File size must not exceed 20 KB.");
+
+    if (documentInput) {
+        documentInput.value = "";
+    }
+
+    return;
+}
+
+    if ((!requirement || requirement.length < 5) && !selectedDocument) {
 
         showToast("Please enter a valid software requirement.");
 
@@ -292,20 +373,21 @@ async function analyzeRequirement() {
 
     try {
 
-        const response = await window.vulenserAuthFetch(
-            `${API_BASE_URL}/analyze`,
-            {
-                method: "POST",
-
-                headers: {
-                    "Content-Type": "application/json"
-                },
-
-                body: JSON.stringify({
-                    requirement: requirement
-                })
-            }
-        );
+        const uploadedFile = selectedDocument;
+        let response;
+        if (uploadedFile) {
+           if (uploadedFile.size > 20 * 1024) {
+    throw new Error("Document must be 20 KB or smaller.");
+}
+            const formData = new FormData();
+            formData.append("file", uploadedFile);
+            response = await window.vulenserAuthFetch(`${API_BASE_URL}/analyze-document`, { method: "POST", body: formData });
+        } else {
+            response = await window.vulenserAuthFetch(`${API_BASE_URL}/analyze`, {
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ requirement })
+            });
+        }
 
 
         const data = await response.json();
@@ -331,21 +413,53 @@ async function analyzeRequirement() {
             original_requirement:
                 data.original_requirement || requirement,
 
-            refined_requirement:
-                data.refined_requirement || "",
+
+            quality_attributes:
+                data.quality_attributes && typeof data.quality_attributes === "object"
+                    ? data.quality_attributes
+                    : {},
+
+            quality_findings:
+                Array.isArray(data.quality_findings)
+                    ? data.quality_findings
+                    : [],
+
+            security_findings:
+                Array.isArray(data.security_findings)
+                    ? data.security_findings
+                    : (Array.isArray(data.violations) ? data.violations : []),
+
+            missing_security_requirements:
+                Array.isArray(data.missing_security_requirements)
+                    ? data.missing_security_requirements
+                    : (Array.isArray(data.missing_requirements) ? data.missing_requirements : []),
+
+          
 
             violations:
-                Array.isArray(data.violations)
-                    ? data.violations
-                    : [],
+                Array.isArray(data.security_findings)
+                    ? data.security_findings
+                    : (Array.isArray(data.violations) ? data.violations : []),
 
             missing_requirements:
-                Array.isArray(data.missing_requirements)
-                    ? data.missing_requirements
-                    : [],
+                Array.isArray(data.missing_security_requirements)
+                    ? data.missing_security_requirements
+                    : (Array.isArray(data.missing_requirements) ? data.missing_requirements : []),
 
-            overall_score:
-                Number(data.overall_score) || 0,
+            overall_score: Number.isFinite(Number(data.overall_score))
+                ? Number(data.overall_score)
+                : 100,
+
+            retrieved_references:
+                Array.isArray(data.retrieved_references) ? data.retrieved_references : [],
+
+            rag_evidence_used: Boolean(data.rag_evidence_used),
+
+            summary: data.summary && typeof data.summary === "object" ? data.summary : null,
+            requirements: Array.isArray(data.requirements) ? data.requirements : [],
+            all_quality_findings: Array.isArray(data.all_quality_findings) ? data.all_quality_findings : [],
+            document_findings: Array.isArray(data.document_findings) ? data.document_findings : [],
+            timings: data.timings && typeof data.timings === "object" ? data.timings : {},
 
             created_at: new Date().toISOString()
 
@@ -355,6 +469,7 @@ async function analyzeRequirement() {
         await saveAnalysis(currentAnalysis);
 
         displayResults(currentAnalysis);
+        if (getElement("requirementDocument")) getElement("requirementDocument").value = "";
 
         updateDashboard();
         updateHistory();
@@ -401,25 +516,26 @@ function displayResults(analysis) {
         analysis.original_requirement
     );
 
-    setText(
-        "refinedRequirement",
-        analysis.refined_requirement || "No refined requirement available."
-    );
-
     displayScore(analysis.overall_score);
 
-    displayFindings(
-        "violationsList",
-        analysis.violations,
-        "No violations or issues identified."
-    );
+    // quality = blocks only (one per factor that really has an issue)
+    const blocks = analysis.quality_attributes || {};
+    displayQualityAttributes(blocks);
+    if (Object.keys(blocks).length) {
+        getElement("qualityFindingsList")?.replaceChildren();
+    } else {
+        displayFindings(
+            "qualityFindingsList",
+            [],
+            "No significant quality issues were detected."
+        );
+    }
 
-    displayFindings(
-        "missingRequirementsList",
-        analysis.missing_requirements,
-        "No important missing requirements identified."
-    );
-
+    // security = one simple list, grouped by OWASP Top 10 / ASVS reference
+    displaySecurityFlaws([
+        ...(analysis.security_findings || analysis.violations || []),
+        ...(analysis.missing_security_requirements || analysis.missing_requirements || [])
+    ]);
 
     getElement("resultsSection")?.classList.remove("hidden");
 
@@ -430,6 +546,42 @@ function displayResults(analysis) {
         block: "start"
     });
 
+}
+
+
+
+
+function displayQualityAttributes(attributes) {
+    const container = getElement("qualityAttributes");
+    if (!container) return;
+
+    container.replaceChildren();
+
+    // Fixed attributes are no longer produced; only old saved analyses still have them.
+    if (!attributes || !Object.keys(attributes).length) return;
+
+    // one block per factor the backend picked for THIS requirement (old history keys still work)
+    Object.entries(attributes).forEach(([name, data]) => {
+        data = data || {};
+        const card = document.createElement("article");
+        card.className = "quality-attribute";
+
+        const heading = document.createElement("h4");
+        heading.textContent = capitalize(name);
+
+        const rating = document.createElement("span");
+        const value = ["Good", "Moderate", "Poor"].includes(data.rating)
+            ? data.rating
+            : "Not assessed";
+        rating.className = `quality-rating quality-${value.toLowerCase().replaceAll(" ", "-")}`;
+        rating.textContent = value;
+
+        const reason = document.createElement("p");
+        reason.textContent = data.reason || "No separate explanation was provided.";
+
+        card.append(heading, rating, reason);
+        container.appendChild(card);
+    });
 }
 
 
@@ -496,7 +648,77 @@ function displayScore(score) {
    FINDINGS
 ========================================= */
 
-function displayFindings(containerId, findings, emptyMessage) {
+// Security flaws: a plain-language risk sentence + its real OWASP reference.
+// Flaws that have a knowledge-base reference are grouped under Top 10 / ASVS.
+function displaySecurityFlaws(findings) {
+    const container = getElement("violationsList");
+    if (!container) return;
+    container.replaceChildren();
+
+    const all = Array.isArray(findings) ? findings : [];
+    const referenced = all.filter((f) => f.basis === "owasp" && f.reference_document);
+    const shown = referenced.length ? referenced : all;   // hide unreferenced ones if we have referenced ones
+
+    if (!shown.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty-state";
+        const message = document.createElement("span");
+        message.textContent = "No relevant security flaws identified.";
+        empty.appendChild(message);
+        container.appendChild(empty);
+        return;
+    }
+
+    const isTop10 = (f) => /top 10/i.test(f.reference_document || "");
+    const isAsvs = (f) => /asvs/i.test(f.reference_document || "");
+    const groups = [
+        ["OWASP Top 10", shown.filter(isTop10)],
+        ["OWASP ASVS", shown.filter((f) => !isTop10(f) && isAsvs(f))],
+        ["", shown.filter((f) => !isTop10(f) && !isAsvs(f))]
+    ];
+
+    groups.forEach(([groupName, items]) => {
+        if (!items.length) return;
+
+        if (groupName) {
+            const groupTitle = document.createElement("h4");
+            groupTitle.className = "eyebrow";
+            groupTitle.textContent = groupName;
+            container.appendChild(groupTitle);
+        }
+
+        items.forEach((finding) => {
+            const item = document.createElement("article");
+            item.className = "finding-item";
+
+            const top = document.createElement("div");
+            top.className = "finding-top";
+
+            const title = document.createElement("h4");
+            title.textContent = finding.basis === "owasp" && finding.reference_document
+                ? finding.reference_document
+                : (finding.title || "Security flaw");
+            top.appendChild(title);
+
+            const level = String(finding.severity || "").toLowerCase();
+            if (["high", "medium", "low"].includes(level)) {
+                const badge = document.createElement("span");
+                badge.className = `severity severity-${level}`;
+                badge.textContent = capitalize(level);
+                top.appendChild(badge);
+            }
+
+            const text = document.createElement("p");
+            text.textContent = finding.description || "";
+
+            item.append(top, text);
+            container.appendChild(item);
+        });
+    });
+}
+
+
+function displayFindings(containerId, findings, emptyMessage, simple = false) {
 
     const container = getElement(containerId);
 
@@ -574,7 +796,45 @@ function displayFindings(containerId, findings, emptyMessage) {
             finding.description || "No additional description.";
 
 
-        item.append(top, description);
+        item.append(top);
+
+        const metaParts = simple ? [] : [
+            finding.requirement_id || (Array.isArray(finding.requirement_ids) ? finding.requirement_ids.join(", ") : ""),
+            finding.category,
+            finding.location
+        ].filter(Boolean);
+        if (metaParts.length) {
+            const meta = document.createElement("p");
+            meta.className = "finding-evidence";
+            meta.textContent = metaParts.join(" | ");
+            item.appendChild(meta);
+        }
+
+        item.append(description);
+
+        if (!simple && finding.recommendation) {
+            const recommendation = document.createElement("p");
+            recommendation.className = "finding-recommendation";
+            recommendation.textContent = `Suggested improvement: ${finding.recommendation}`;
+            item.appendChild(recommendation);
+        }
+
+        // simple mode (security): show a reference only when it is a real OWASP knowledge-base one
+        const reference = finding.reference_document || finding.source;
+        if (reference && (!simple || finding.basis === "owasp")) {
+            const evidence = document.createElement("p");
+            evidence.className = "finding-evidence";
+            evidence.textContent = simple
+                ? `Reference: ${reference}`
+                : `Reference: ${reference}${finding.reference_category ? ` | ${finding.reference_category}` : ""}`;
+            item.appendChild(evidence);
+        }
+
+        if (!simple && finding.evidence_quote) {
+            const quote = document.createElement("blockquote");
+            quote.textContent = `Evidence: “${finding.evidence_quote}”`;
+            item.appendChild(quote);
+        }
 
         container.appendChild(item);
 
@@ -587,13 +847,34 @@ function displayFindings(containerId, findings, emptyMessage) {
    LOADING
 ========================================= */
 
+let loadingTimer = null;
+
 function showLoading() {
 
     getElement("loadingState")?.classList.remove("hidden");
 
+    // The API call is one request, so show the typical stage order while waiting.
+    const stages = [
+        "Reading the document and identifying requirements...",
+        "Evaluating requirement quality...",
+        "Retrieving relevant OWASP evidence...",
+        "Running the security analysis...",
+        "Validating findings and preparing the report..."
+    ];
+    let stage = 0;
+    const message = getElement("loadingMessage");
+    if (message) message.textContent = stages[0];
+    clearInterval(loadingTimer);
+    loadingTimer = setInterval(() => {
+        stage = Math.min(stage + 1, stages.length - 1);
+        if (message) message.textContent = stages[stage];
+    }, 6000);
+
 }
 
 function hideLoading() {
+
+    clearInterval(loadingTimer);
 
     getElement("loadingState")?.classList.add("hidden");
 
@@ -638,10 +919,20 @@ async function saveAnalysis(analysis) {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ original_requirement: analysis.original_requirement, result: {
-                refined_requirement: analysis.refined_requirement,
-                violations: analysis.violations,
-                missing_requirements: analysis.missing_requirements,
-                overall_score: analysis.overall_score
+                quality_attributes: analysis.quality_attributes || {},
+                quality_findings: analysis.quality_findings || [],
+                all_quality_findings: analysis.all_quality_findings || [],
+                document_findings: analysis.document_findings || [],
+                summary: analysis.summary || null,
+                requirements: analysis.requirements || [],
+                security_findings: analysis.security_findings || analysis.violations || [],
+                missing_security_requirements: analysis.missing_security_requirements || analysis.missing_requirements || [],
+            
+                violations: analysis.security_findings || analysis.violations || [],
+                missing_requirements: analysis.missing_security_requirements || analysis.missing_requirements || [],
+                overall_score: analysis.overall_score,
+                retrieved_references: analysis.retrieved_references || [],
+                rag_evidence_used: Boolean(analysis.rag_evidence_used)
             }})
         });
     } catch (error) { console.error("Server history save failed:", error); }
@@ -1001,43 +1292,64 @@ async function copyResults() {
 
 function buildReportText(analysis) {
 
-    const violations = analysis.violations.map((item, index) => {
+    const securityFindings = analysis.security_findings || analysis.violations || [];
+    const missingSecurity = analysis.missing_security_requirements || analysis.missing_requirements || [];
+    const qualityFindings = analysis.quality_findings || [];
+
+    const quality = qualityFindings.map((item, index) => {
+        return `${index + 1}. ${item.title}
+${item.description}
+Suggested improvement: ${item.recommendation || "Not provided"}`;
+    }).join("\n\n");
+
+    const violations = securityFindings.map((item, index) => {
 
         return `${index + 1}. ${item.title}
 Severity: ${item.severity || "Not specified"}
-${item.description}`;
+${item.description}
+Reference document: ${item.reference_document || item.source || "Original requirement"}
+Reference category: ${item.reference_category || item.basis || "Requirement"}
+Evidence: ${item.evidence_quote || "Based on submitted requirement"}`;
 
     }).join("\n\n");
 
 
-    const missing = analysis.missing_requirements.map((item, index) => {
+    const missing = missingSecurity.map((item, index) => {
 
         return `${index + 1}. ${item.title}
-${item.description}`;
+${item.description}
+Reference document: ${item.reference_document || item.source || "Original requirement"}
+Reference category: ${item.reference_category || item.basis || "Requirement"}
+Evidence: ${item.evidence_quote || "Based on submitted requirement"}`;
 
     }).join("\n\n");
 
 
     return `
-SDLC VuLenseR
+SDLC VuLenser
 SECURE REQUIREMENT ANALYSIS REPORT
 
 Date: ${formatDate(analysis.created_at)}
 
-OVERALL SCORE
+OVERALL QUALITY SCORE
 ${analysis.overall_score}/100
+
+REQUIREMENT QUALITY FINDINGS
+${quality || "No quality issues identified."}
 
 ORIGINAL REQUIREMENT
 ${analysis.original_requirement}
 
-REFINED REQUIREMENT
-${analysis.refined_requirement}
-
 VIOLATIONS / ISSUES
 ${violations || "No issues identified."}
 
-MISSING REQUIREMENTS
-${missing || "No missing requirements identified."}
+MISSING SECURITY REQUIREMENTS
+${missing || "No missing security requirements identified."}
+
+
+
+RAG EVIDENCE USED
+${analysis.rag_evidence_used ? "Yes" : "No directly relevant knowledge-base evidence was retrieved."}
 `.trim();
 
 }
@@ -1071,7 +1383,7 @@ function downloadReport() {
     link.href = url;
 
     link.download =
-        `VuLenseR_Report_${Date.now()}.txt`;
+        `SDLC_VuLenser_Report_${Date.now()}.txt`;
 
 
     document.body.appendChild(link);
