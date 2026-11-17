@@ -1,0 +1,1340 @@
+
+/* ---------------------------------------------------------------------
+   1. COLOR TOKENS (light mode = default)
+   All existing components read these variables, so changing them here
+   re-themes the whole app without touching component CSS.
+   THEME COLOR: Sky Blue #38BDF8
+   --------------------------------------------------------------------- */
+/* THEME COLOR: Sky Blue #38BDF8 */
+:root {
+    --primary: #0ea5e9;                 /* Sky blue (deeper shade, readable on light surfaces) */
+    --primary-dark: #0284c7;
+    --primary-light: #e0f2fe;
+    --accent: #38bdf8;                  /* Sky blue #38BDF8 */
+    --sky: #38bdf8;                     /* Sky blue (second theme colour) */
+    --sky-deep: #0284c7;                /* Deeper sky blue for text on light surfaces */
+    --grad: linear-gradient(135deg, #38bdf8, #0ea5e9);
+    --on-grad: #031524;                 /* dark text on the sky blue gradient */
+
+    --background: #f3f9fe;
+    --surface: #ffffff;
+    --surface-soft: #eaf5fd;
+    --card: var(--surface);             /* some existing rules use --card but it was never defined */
+
+    --text: #08131f;
+    --muted: #5b6b7d;
+    --border: #d9e8f5;
+
+    --shadow: 0 10px 30px rgba(56, 189, 248, 0.16);
+        --font-heading: "Manrope", system-ui, sans-serif;
+    --font-body: "DM Sans", system-ui, sans-serif;
+}
+
+/* Dark mode: matches the reference (near-black navy background, sky blue glow) */
+[data-theme="dark"] {
+    --primary: #38bdf8;
+    --primary-dark: #0ea5e9;
+    --primary-light: #0c2d48;
+    --accent: #38bdf8;
+    --sky: #38bdf8;
+    --sky-deep: #38bdf8;
+    --grad: linear-gradient(135deg, #38bdf8, #0ea5e9);
+    --on-grad: #031524;
+
+    --background: #030a12;
+    --surface: #0a1420;
+    --surface-soft: #101c2c;
+
+    --text: #e8f4ff;
+    --muted: #8a9fb8;
+    --border: #182a42;
+
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+}
+
+/* ---------------------------------------------------------------------
+   2. TYPOGRAPHY
+   --------------------------------------------------------------------- */
+body {
+    font-family: var(--font-body);
+}
+
+/* All headings: bold and clear */
+h1, h2, h3,
+.brand-info h2,
+.page-heading h1,
+.stat-card h2,
+.welcome-card h2,
+.results-heading h2,
+.score-card h2,
+.auth-shell .auth-brand h1,
+.auth-shell .auth-form h2 {
+    font-family: var(--font-heading);
+    font-weight: 800;
+    letter-spacing: -0.012em;
+}
+
+/* Smaller headings: slightly lighter weight */
+h3,
+.card-heading h3,
+.section-heading h3 {
+    font-weight: 700;
+}
+
+/* Main page title: larger and stronger */
+.page-heading h1 {
+    font-size: clamp(28px, 4vw, 38px);
+    line-height: 1.15;
+}
+
+/* Eyebrow labels (OVERVIEW, SETTINGS, etc.) */
+.eyebrow {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    background: var(--grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+/* Buttons and navigation */
+.primary-button,
+.secondary-button,
+.nav-item {
+    font-family: var(--font-heading);
+    font-weight: 600;
+}
+
+/* ---------------------------------------------------------------------
+   3. SIDEBAR AND NAVIGATION
+   --------------------------------------------------------------------- */
+.sidebar {
+    box-shadow: 0 0 40px rgba(56, 189, 248, 0.05);
+}
+
+.nav-item {
+    border-radius: 12px;
+    transition: background 0.25s, color 0.25s, transform 0.2s, box-shadow 0.25s;
+}
+
+/* Hover: soft tint and a small nudge */
+.nav-item:hover {
+    background: var(--primary-light);
+    color: var(--primary);
+    transform: translateX(3px);
+}
+
+/* Active page: gradient pill */
+.nav-item.active {
+    background: var(--grad);
+    color: var(--on-grad);
+    box-shadow: 0 8px 20px rgba(56, 189, 248, 0.3);
+    transform: none;
+}
+
+/* ---------------------------------------------------------------------
+   4. TOP BAR
+   --------------------------------------------------------------------- */
+.topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+}
+
+.system-status {
+    background: var(--surface-soft);
+    padding: 7px 14px;
+    border-radius: 999px;
+}
+
+/* Gentle pulse on the "System Ready" dot */
+.status-dot {
+    animation: vl-pulse 2s ease-in-out infinite;
+}
+
+@keyframes vl-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(22, 163, 106, 0.5); }
+    50%      { box-shadow: 0 0 0 6px rgba(22, 163, 106, 0); }
+}
+
+.topbar-avatar,
+.profile-avatar {
+    background: var(--grad);
+    color: var(--on-grad);
+}
+
+.icon-button {
+    border-radius: 12px;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.icon-button:hover {
+    transform: translateY(-1px);
+}
+
+/* ---------------------------------------------------------------------
+   5. BUTTONS
+   --------------------------------------------------------------------- */
+.primary-button {
+    background: var(--grad);
+    color: var(--on-grad);
+    border-radius: 12px;
+    box-shadow: 0 8px 22px rgba(56, 189, 248, 0.3);
+    transition: transform 0.2s, box-shadow 0.2s, filter 0.2s;
+}
+
+.primary-button:hover {
+    background: var(--grad);            /* keep the gradient on hover */
+    filter: brightness(1.08);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(56, 189, 248, 0.38);
+}
+
+.primary-button:active {
+    transform: scale(0.98);
+}
+
+.secondary-button {
+    border-radius: 12px;
+    transition: transform 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.secondary-button:hover {
+    transform: translateY(-1px);
+}
+
+/* ---------------------------------------------------------------------
+   6. CARDS
+   --------------------------------------------------------------------- */
+.stat-card,
+.content-card {
+    border-radius: 18px;
+    transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+}
+
+/* Stat cards lift slightly on hover */
+.stat-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--primary);
+    box-shadow: 0 16px 36px rgba(56, 189, 248, 0.18);
+}
+
+/* Dashboard welcome card: cyan glow */
+.welcome-card {
+    background:
+        radial-gradient(circle at 95% 10%, rgba(56, 189, 248, 0.16), transparent 38%),
+        radial-gradient(circle at 5% 100%, rgba(56, 189, 248, 0.14), transparent 40%),
+        var(--surface);
+}
+
+/* Analysis findings */
+.finding-item {
+    border-radius: 14px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.finding-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+/* Quality score ring: see "SCORE CARD" block at the end of this file */
+
+/* ---------------------------------------------------------------------
+   7. FORM CONTROLS
+   --------------------------------------------------------------------- */
+textarea,
+select,
+.search-box input,
+.admin-create-user input {
+    border-radius: 12px;
+    transition: border-color 0.25s, box-shadow 0.25s;
+}
+
+textarea:focus,
+select:focus,
+.search-box input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18);
+}
+
+/* ---------------------------------------------------------------------
+   8. PAGE ANIMATIONS
+   --------------------------------------------------------------------- */
+/* Each page fades and slides up when it becomes active (display logic is untouched) */
+.page-section.active {
+    animation: vl-page-in 0.45s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+@keyframes vl-page-in {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: none; }
+}
+
+/* Stat cards appear one after another on the dashboard */
+.stats-grid .stat-card {
+    animation: vl-card-in 0.5s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+.stats-grid .stat-card:nth-child(2) { animation-delay: 0.06s; }
+.stats-grid .stat-card:nth-child(3) { animation-delay: 0.12s; }
+.stats-grid .stat-card:nth-child(4) { animation-delay: 0.18s; }
+.stats-grid .stat-card:nth-child(5) { animation-delay: 0.24s; }
+
+@keyframes vl-card-in {
+    from { opacity: 0; transform: translateY(20px) scale(0.98); }
+    to   { opacity: 1; transform: none; }
+}
+
+/* ---------------------------------------------------------------------
+   9. SCROLLBAR (cosmetic)
+   --------------------------------------------------------------------- */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+/* ---------------------------------------------------------------------
+   11. USER DASHBOARD, HISTORY AND REPORTS (post-login screens)
+   Matches the approved design: soft rows, pill tags, lifted cards.
+   --------------------------------------------------------------------- */
+
+/* Page header: gradient accent bar under the title area */
+.page-heading {
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--border);
+}
+
+/* Recent activity rows: padded, rounded, highlight on hover */
+.activity-item {
+    padding: 12px 14px;
+    border: 1px solid transparent;
+    border-bottom-color: var(--border);
+    border-radius: 12px;
+    transition: background 0.2s, border-color 0.2s, transform 0.2s;
+}
+.activity-item:hover {
+    background: var(--surface-soft);
+    border-color: var(--border);
+    transform: translateX(3px);
+}
+
+/* Severity / risk / quality tags: rounded pill look */
+.severity,
+.risk-badge,
+.quality-rating {
+    border-radius: 999px;
+    letter-spacing: 0.3px;
+}
+
+/* Report and history cards */
+.report-card {
+    border-radius: 16px;
+    transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+}
+.report-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--primary);
+    box-shadow: var(--shadow);
+}
+
+/* Section / result icon tiles use the brand gradient (colored variants keep their own colors) */
+.section-icon,
+.result-icon:not(.red):not(.green):not(.orange):not(.blue) {
+    background: var(--grad);
+    color: var(--on-grad);
+}
+
+/* Analyzer: quality attribute cards and loading steps */
+.quality-attribute {
+    border-radius: 14px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.quality-attribute:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+.loading-steps span {
+    border-radius: 999px;
+    animation: vl-step 1.6s ease-in-out infinite;
+}
+.loading-steps span:nth-child(2) { animation-delay: 0.25s; }
+.loading-steps span:nth-child(3) { animation-delay: 0.5s; }
+@keyframes vl-step {
+    0%, 100% { opacity: 0.55; }
+    50%      { opacity: 1; }
+}
+
+/* Loader spinner uses the brand colors */
+.loader {
+    border-color: var(--primary-light);
+    border-top-color: var(--accent);
+}
+
+/* Toast notification */
+.toast {
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+}
+
+/* Footer */
+.app-footer {
+    color: var(--muted);
+}
+
+/* ---------------------------------------------------------------------
+   12. ADMIN PANEL
+   --------------------------------------------------------------------- */
+
+/* Admin stat cards: gradient accent line along the top edge */
+.admin-stats .stat-card {
+    position: relative;
+    overflow: hidden;
+}
+.admin-stats .stat-card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--grad);
+}
+
+.admin-card {
+    border-radius: 18px;
+}
+
+/* Tables: rounded header row and soft row hover */
+.admin-table th {
+    background: var(--surface-soft);
+    color: var(--muted);
+}
+.admin-table th:first-child { border-radius: 10px 0 0 10px; }
+.admin-table th:last-child  { border-radius: 0 10px 10px 0; }
+.admin-table tbody tr {
+    transition: background 0.2s;
+}
+.admin-table tbody tr:hover {
+    background: var(--surface-soft);
+}
+
+/* Small action buttons inside tables */
+.admin-table button {
+    border-radius: 9px;
+    transition: border-color 0.2s, color 0.2s, transform 0.2s;
+}
+.admin-table button:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    transform: translateY(-1px);
+}
+.admin-table button.danger:hover {
+    border-color: var(--red);
+    color: var(--red);
+}
+
+/* Upload row controls */
+.document-upload-row select,
+.document-upload-row input[type="file"] {
+    border-radius: 12px;
+}
+.admin-note code {
+    background: var(--surface-soft);
+    padding: 2px 6px;
+    border-radius: 6px;
+}
+
+/* ---------------------------------------------------------------------
+   13. PROFILE POPOVER AND PROFILE EDITOR (cosmetic only)
+   --------------------------------------------------------------------- */
+.profile-popover {
+    border-radius: 16px !important;   /* inline style on the element sets 12px */
+}
+.profile {
+    border-radius: 14px;
+    transition: background 0.2s;
+}
+.profile:hover {
+    background: var(--surface-soft);
+}
+
+/* ---------------------------------------------------------------------
+   10. ACCESSIBILITY: respect users who prefer reduced motion
+   --------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+    .page-section.active,
+    .stats-grid .stat-card,
+    .loading-steps span,
+    .status-dot {
+        animation: none;
+    }
+    .nav-item:hover,
+    .stat-card:hover,
+    .primary-button:hover {
+        transform: none;
+    }
+}
+
+/* =====================================================================
+   PART 2: USER DASHBOARD AND ADMIN PANEL
+   Matches the approved design: gradient icon tiles, rounded rows,
+   pill badges, soft table headers and hover feedback.
+   Styling only. All class names and markup are unchanged.
+   ===================================================================== */
+
+
+/* ---------------------------------------------------------------------
+   12. ICON TILES (stat cards, section headings, result headings)
+   Gradient tile with a white icon, like the feature cards in the design.
+   --------------------------------------------------------------------- */
+.stat-icon,
+.section-icon,
+.result-icon {
+    border-radius: 12px;
+}
+
+.stat-icon.purple,
+.section-icon,
+.result-icon:not(.red) {
+    background: var(--grad);
+    color: var(--on-grad);
+    box-shadow: 0 6px 16px rgba(56, 189, 248, 0.3);
+}
+
+/* Colored tiles keep their meaning (red = risk, green = score, blue = info) */
+.stat-icon.red,
+.result-icon.red   { box-shadow: 0 6px 16px rgba(227, 78, 98, 0.25); }
+.stat-icon.green   { box-shadow: 0 6px 16px rgba(22, 163, 106, 0.25); }
+.stat-icon.blue    { box-shadow: 0 6px 16px rgba(66, 134, 232, 0.25); }
+
+
+
+/* ---------------------------------------------------------------------
+   13. LIST ROWS (recent activity, history, reports)
+   Rounded rows that highlight on hover.
+   --------------------------------------------------------------------- */
+.activity-item {
+    padding: 12px 14px;
+    border: 1px solid transparent;
+    border-bottom-color: var(--border);
+    border-radius: 12px;
+    transition: background 0.2s, border-color 0.2s, transform 0.2s;
+}
+
+.activity-item:hover {
+    background: var(--surface-soft);
+    border-color: var(--border);
+    transform: translateX(3px);
+}
+
+.history-item,
+.report-card {
+    border-radius: 14px;
+    background: var(--surface);
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+
+.history-item:hover,
+.report-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary);
+    box-shadow: var(--shadow);
+}
+
+.history-toolbar .search-box {
+    border-radius: 12px;
+    background: var(--surface-soft);
+    transition: border-color 0.25s, box-shadow 0.25s;
+}
+
+.history-toolbar .search-box:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18);
+}
+
+/* ---------------------------------------------------------------------
+   14. BADGES AND PILLS (risk level, severity, status)
+   --------------------------------------------------------------------- */
+.risk-badge,
+.severity,
+.status-pill {
+    border-radius: 999px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+}
+
+.loading-steps span {
+    border-radius: 999px;
+    font-weight: 600;
+}
+
+/* ---------------------------------------------------------------------
+   15. ANALYZER PAGE
+   --------------------------------------------------------------------- */
+.analyzer-card,
+.loading-card,
+.result-card {
+    overflow: hidden;
+}
+
+.loader {
+    border-top-color: var(--accent);
+}
+
+.quality-attribute {
+    border-radius: 14px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.quality-attribute:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+/* Results appear with a soft slide-up */
+.results-container > .content-card {
+    animation: vl-card-in 0.5s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+.results-container > .content-card:nth-child(2) { animation-delay: 0.05s; }
+.results-container > .content-card:nth-child(3) { animation-delay: 0.1s; }
+.results-container > .content-card:nth-child(4) { animation-delay: 0.15s; }
+.results-container > .content-card:nth-child(5) { animation-delay: 0.2s; }
+.results-container > .content-card:nth-child(6) { animation-delay: 0.25s; }
+
+/* Empty states (no history, no reports) */
+.empty-state {
+    border-radius: 14px;
+    background: var(--surface-soft);
+}
+
+/* ---------------------------------------------------------------------
+   16. ADMIN PANEL
+   --------------------------------------------------------------------- */
+.admin-card {
+    border-radius: 18px;
+}
+
+/* Upload row sits in a soft panel */
+.document-upload-row,
+.admin-create-user {
+    padding: 14px;
+    border: 1px dashed var(--border);
+    border-radius: 14px;
+    background: var(--surface-soft);
+}
+
+/* Tables: soft header, hover rows, rounded container */
+.admin-table-wrap {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+}
+
+.admin-table th {
+    background: var(--surface-soft);
+    color: var(--muted);
+    font-weight: 600;
+}
+
+.admin-table tbody tr {
+    transition: background 0.2s;
+}
+
+.admin-table tbody tr:hover {
+    background: var(--primary-light);
+}
+
+.admin-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.admin-table button {
+    border-radius: 10px;
+    transition: border-color 0.2s, color 0.2s, transform 0.2s;
+}
+
+.admin-table button:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    transform: translateY(-1px);
+}
+
+.admin-table button.danger:hover {
+    border-color: var(--red);
+    color: var(--red);
+}
+
+.admin-note {
+    padding: 10px 14px;
+    border-left: 3px solid var(--sky);
+    border-radius: 0 10px 10px 0;
+    background: var(--surface-soft);
+}
+
+.admin-index-actions {
+    border-radius: 14px;
+}
+
+/* ---------------------------------------------------------------------
+   17. SETTINGS AND PROFILE POPOVER
+   --------------------------------------------------------------------- */
+.settings-row select {
+    border-radius: 10px;
+}
+
+.version-label {
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: var(--primary-light);
+    color: var(--sky-deep);
+    font-weight: 600;
+}
+
+.profile {
+    border-radius: 14px;
+    transition: background 0.2s;
+}
+
+.profile:hover {
+    background: var(--surface-soft);
+}
+
+/* Toast notification */
+.toast {
+    border-radius: 14px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .results-container > .content-card { animation: none; }
+    .activity-item:hover,
+    .history-item:hover,
+    .report-card:hover { transform: none; }
+}
+
+/* =====================================================
+   PAGE HEADINGS: gradient text (white / sky blue #38BDF8)
+   Dashboard + Admin
+   ===================================================== */
+:root {
+    --heading-grad: linear-gradient(90deg, #0b1220 0%, #0284c7 50%, #38BDF8 100%);
+}
+
+[data-theme="dark"] {
+    --heading-grad: linear-gradient(90deg, #ffffff 0%, #38BDF8 100%);
+}
+
+/* OVERVIEW / SYSTEM ADMINISTRATION label: on its own line */
+.page-heading .eyebrow {
+    display: block;
+    margin-bottom: 6px;
+}
+
+/* Main heading: sits BELOW the eyebrow */
+#dashboard .page-heading h1,
+#admin .page-heading h1 {
+    display: block;
+    width: fit-content;
+    background: var(--heading-grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    padding-bottom: 4px;
+    margin: 0 0 6px;
+}
+
+/* Dark mode: soft sky blue glow */
+[data-theme="dark"] #dashboard .page-heading h1,
+[data-theme="dark"] #admin .page-heading h1 {
+    filter: drop-shadow(0 0 18px rgba(56, 189, 248, 0.35));
+}
+/* ---------------------------------------------------------------------
+   SKY BLUE THEME: readability fix for gradient text in light mode
+   (bright sky blue on white is hard to read, so use the deeper blue there)
+   --------------------------------------------------------------------- */
+:root:not([data-theme="dark"]) .eyebrow,
+:root:not([data-theme="dark"]) .stat-card h2 {
+    background: linear-gradient(135deg, #0284c7, #0ea5e9);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+
+/* =====================================================================
+   TYPOGRAPHY SCALE  -  readable, balanced sizes
+   ---------------------------------------------------------------------
+   TO MAKE TEXT LARGER OR SMALLER, CHANGE ONLY THESE NUMBERS.
+   Rule: no text smaller than 13px, and headings no larger than 36px.
+   ===================================================================== */
+:root {
+    --fs-page-title: clamp(28px, 3.4vw, 36px);  /* main heading: "Welcome to ...", "Admin Dashboard" */
+    --fs-page-sub: 16px;                      /* line under the main heading */
+    --fs-eyebrow: 13px;                       /* OVERVIEW / SYSTEM ADMINISTRATION label */
+    --fs-section-title: 19px;                   /* card headings: "Knowledge Base Management", etc. */
+    --fs-section-sub: 15px;                     /* small line under a card heading */
+    --fs-stat-label: 14.5px;                    /* stat card labels ("Total Analyses") */
+    --fs-stat-number: 34px;                     /* large numbers in stat cards */
+    --fs-stat-note: 14px;                       /* small description in stat cards */
+    --fs-nav: 15px;                           /* sidebar menu items */
+    --fs-body: 16px;                            /* normal text inside cards */
+    --fs-small: 14.5px;                         /* tables, notes, footer, hints */
+    --fs-badge: 13px;                         /* small badges / pills / table headers */
+    --fs-button: 15px;                          /* buttons */
+    --lh-body: 1.6;                             /* line spacing (readability) */
+}
+
+/* Better contrast for secondary text (old grey was too faint on white) */
+:root                  { --muted: #455468; }
+[data-theme="dark"]    { --muted: #b9c8dc; }
+
+body {
+    font-size: var(--fs-body);
+    line-height: var(--lh-body);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+/* ----- headings ----- */
+.page-heading h1                         { font-size: var(--fs-page-title); line-height: 1.2; }
+.page-heading p                          { font-size: var(--fs-page-sub); line-height: var(--lh-body); }
+.eyebrow                                 { font-size: var(--fs-eyebrow); letter-spacing: .1em; }
+
+.card-heading h3,
+.section-heading h3,
+.result-section-heading h3,
+.settings-row h3                         { font-size: var(--fs-section-title); line-height: 1.3; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 4px; }
+.loading-card h3                         { font-size: 20px; }
+.welcome-card h2                         { font-size: 26px; line-height: 1.25; }
+.results-heading h2                      { font-size: 26px; line-height: 1.25; }
+
+.card-heading p,
+.section-heading p,
+.result-section-heading p,
+.settings-row p,
+.results-heading p                       { font-size: var(--fs-section-sub); line-height: var(--lh-body); }
+.welcome-card p                          { font-size: var(--fs-page-sub); line-height: var(--lh-body); }
+
+/* ----- stat cards ----- */
+.stat-top                                { font-size: var(--fs-stat-label); font-weight: 600; }
+.stat-card h2                            { font-size: var(--fs-stat-number); line-height: 1.15; }
+.stat-description                        { font-size: var(--fs-stat-note); }
+.score-card h2                           { font-size: 34px; }
+.score-card p                            { font-size: var(--fs-small); }
+
+/* ----- sidebar / profile ----- */
+.nav-item                                { font-size: var(--fs-nav); }
+.brand-info h2                           { font-size: 19px; }
+.profile-info strong                     { font-size: 14.5px; }
+.profile-info span                       { font-size: 12.5px; }
+.workspace-label                         { font-size: 12px; letter-spacing: .08em; }
+
+/* ----- cards / lists / results ----- */
+.activity-item h4                        { font-size: 15px; line-height: 1.4; }
+.activity-item p                         { font-size: var(--fs-small); }
+.report-info h3                          { font-size: 15.5px; line-height: 1.4; }
+.report-info p                           { font-size: var(--fs-small); }
+.finding-item h4,
+.quality-attribute h4                    { font-size: 15.5px; line-height: 1.4; }
+.finding-item p,
+.finding-evidence,
+.finding-recommendation,
+.finding-item blockquote                 { font-size: var(--fs-body); line-height: var(--lh-body); }
+.result-original p,
+.refined-output,
+.markdown-content                        { font-size: var(--fs-body); line-height: 1.7; }
+.quality-rating                          { font-size: var(--fs-badge); }
+
+/* ----- forms / buttons / misc ----- */
+.secondary-button,
+.text-button,
+.primary-button                          { font-size: var(--fs-button); }
+form label                               { font-size: 14px; }
+textarea                                 { font-size: var(--fs-body); line-height: var(--lh-body); }
+.input-footer                            { font-size: var(--fs-small); }
+.loading-card p                          { font-size: 14.5px; }
+.loading-steps span                      { font-size: var(--fs-badge); }
+.version-label                           { font-size: var(--fs-small); }
+.empty-state strong                      { font-size: 15.5px; }
+.empty-state span                        { font-size: var(--fs-small); }
+.toast                                   { font-size: 14px; }
+.app-footer                              { font-size: var(--fs-small); }
+.search-box input                        { font-size: 14px; }
+
+/* ----- admin tables & badges ----- */
+.admin-table                             { font-size: var(--fs-small); }
+.admin-table td                          { line-height: 1.5; }
+.admin-table th                          { font-size: var(--fs-badge); }
+.admin-table button                      { font-size: var(--fs-badge); }
+.status-pill,
+.severity,
+.risk-badge                              { font-size: var(--fs-badge); }
+.admin-note,
+.admin-index-actions,
+.replace-check,
+.document-upload-row input[type=file]    { font-size: var(--fs-small); line-height: var(--lh-body); }
+
+/* =====================================================================
+   SIDEBAR BRAND  (ChatGPT style)
+   - Open sidebar : "SDLC VuLenser" title on the left, collapse arrow on the right
+   - Closed sidebar: small logo only; on hover the logo is replaced by the
+                     "open sidebar" arrow (the icons below stay as they are)
+   ===================================================================== */
+.app-container.sidebar-collapsed .sidebar .brand {
+    position: relative;
+    display: block;
+    height: 44px;
+    min-height: 44px;
+    margin-bottom: 28px;
+}
+.app-container.sidebar-collapsed .sidebar .brand .brand-left,
+.app-container.sidebar-collapsed .sidebar .brand .sidebar-toggle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+}
+.app-container.sidebar-collapsed .sidebar .brand .brand-left {
+    width: 40px;
+    height: 40px;
+    flex: none;
+    justify-content: center;
+    transition: opacity .15s ease;
+}
+.app-container.sidebar-collapsed .sidebar .brand .brand-icon {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    background: transparent !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    overflow: visible;
+}
+.app-container.sidebar-collapsed .sidebar .brand .brand-icon img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    background: transparent;
+    border-radius: 9px;
+    image-rendering: auto;
+}
+.app-container.sidebar-collapsed .sidebar .brand .sidebar-toggle {
+    width: 40px;
+    height: 40px;
+    flex: none;
+    order: 0;
+    align-self: auto;
+    border: 0;
+    background: var(--surface-soft);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .15s ease, background .15s ease;
+}
+.app-container.sidebar-collapsed .sidebar .brand:hover .brand-left,
+.app-container.sidebar-collapsed .sidebar .brand:focus-within .brand-left {
+    opacity: 0;
+}
+.app-container.sidebar-collapsed .sidebar .brand:hover .sidebar-toggle,
+.app-container.sidebar-collapsed .sidebar .brand:focus-within .sidebar-toggle {
+    opacity: 1;
+    pointer-events: auto;
+}
+/* Touch screens have no hover: always show the arrow instead of the logo */
+@media (hover: none) {
+    .app-container.sidebar-collapsed .sidebar .brand .brand-left { opacity: 0; }
+    .app-container.sidebar-collapsed .sidebar .brand .sidebar-toggle { opacity: 1; pointer-events: auto; }
+}
+/* Open sidebar: smaller, tidy title */
+.app-container:not(.sidebar-collapsed) .sidebar .brand-info h2 { font-size: 18px; }
+
+/* =====================================================================
+   AVATAR (shows only the picture if there is one, otherwise the first letter)
+   ===================================================================== */
+.avatar {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--grad);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    color: var(--on-grad);
+    font-family: var(--font-heading);
+    font-weight: 800;
+    overflow: hidden;
+    user-select: none;
+}
+.avatar.has-photo { background-color: var(--surface-soft); }
+.avatar-sm { width: 42px;  height: 42px;  font-size: 17px; }
+.avatar-md { width: 46px;  height: 46px;  font-size: 19px; }
+.avatar-xl { width: 96px;  height: 96px;  font-size: 38px; border: 3px solid var(--border); }
+
+/* =====================================================================
+   ACCOUNT MENU  (Profile / Settings / Log out)
+   ===================================================================== */
+.account-menu {
+    position: fixed;
+    left: 14px;
+    bottom: 84px;
+    z-index: 1000;
+    width: 262px;
+    padding: 8px;
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.22);
+    animation: vl-pop .16s ease-out;
+}
+@keyframes vl-pop { from { opacity: 0; transform: translateY(6px) scale(.98); } to { opacity: 1; transform: none; } }
+.account-menu-head { display: flex; align-items: center; gap: 12px; padding: 10px 10px 12px; }
+.account-menu-id { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.account-menu-id strong { font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.account-menu-id span { font-size: 12.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.account-menu-sep { height: 1px; background: var(--border); margin: 6px 4px; }
+.account-menu-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 12px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--text);
+    font-family: var(--font-heading);
+    font-size: 14.5px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    transition: background .15s, color .15s;
+}
+.account-menu-item i, .account-menu-item svg { width: 18px; height: 18px; }
+.account-menu-item:hover { background: var(--primary-light); color: var(--sky-deep); }
+.account-menu-item.danger:hover { background: var(--red-bg); color: var(--red); }
+
+/* =====================================================================
+   PROFILE MODAL
+   ===================================================================== */
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(8, 14, 28, 0.55);
+    backdrop-filter: blur(4px);
+}
+.modal-card {
+    width: min(520px, 100%);
+    max-height: calc(100vh - 40px);
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+    animation: vl-pop .2s ease-out;
+}
+.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid var(--border); }
+.modal-header h3 { font-size: 22px; margin: 0; }
+.modal-body { padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+
+.profile-photo-row { display: flex; align-items: center; gap: 20px; }
+.photo-buttons { display: flex; flex-wrap: wrap; gap: 10px; }
+.upload-btn { cursor: pointer; }
+.upload-btn i, .upload-btn svg, .photo-buttons .secondary-button svg { width: 16px; height: 16px; }
+.photo-buttons .secondary-button:disabled { opacity: .45; cursor: not-allowed; }
+#profilePhotoInput:focus-visible + .photo-buttons .upload-btn { outline: 2px solid var(--sky); }
+.field-hint { margin-top: 8px; font-size: 12.5px; color: var(--muted); }
+
+.field { display: flex; flex-direction: column; gap: 7px; }
+.field label { font-size: 13.5px; font-weight: 700; }
+.field label small { font-weight: 500; color: var(--muted); }
+.field input {
+    width: 100%;
+    padding: 12px 14px;
+    font-size: 15px;
+    color: var(--text);
+    background: var(--surface-soft);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+}
+.field input:focus { border-color: var(--sky); box-shadow: 0 0 0 3px rgba(56, 189, 248, .22); }
+.field input:disabled { opacity: .7; cursor: not-allowed; }
+.field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+.modal-message { min-height: 18px; font-size: 13.5px; margin: 0; }
+.modal-message.ok  { color: var(--green); }
+.modal-message.err { color: var(--red); }
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
+.modal-divider { height: 1px; background: var(--border); margin: 4px 0; }
+.modal-subtitle { font-family: var(--font-heading); font-size: 17px; font-weight: 700; margin: 0; }
+
+@media (max-width: 520px) {
+    .field-grid { grid-template-columns: 1fr; }
+    .profile-photo-row { flex-direction: column; align-items: flex-start; }
+}
+
+
+/* =====================================================================
+   READABILITY PASS  (fonts: Manrope headings + DM Sans body)
+   This block covers selectors that were missing from the scale above.
+   Sizes are controlled by the --fs-* variables defined above.
+   ===================================================================== */
+
+/* small text that was still 11-12px in style.css */
+.brand-info span,
+.breadcrumb,
+.system-status                           { font-size: var(--fs-small); }
+.profile-info strong                     { font-size: 15px; }
+.profile-info span                       { font-size: 13px; }
+.workspace-label                         { font-size: 12.5px; letter-spacing: .06em; }
+.history-item-info h4,
+.report-info h3                          { font-size: 16px; line-height: 1.4; }
+.history-item-info p,
+.report-info p                           { font-size: var(--fs-small); }
+.quality-attribute p,
+.finding-recommendation                  { font-size: var(--fs-small); line-height: var(--lh-body); }
+.finding-item h4,
+.quality-attribute h4                    { font-size: 16px; }
+.finding-evidence,
+.finding-item blockquote                 { font-size: var(--fs-small); line-height: 1.65; }
+.markdown-content                        { font-size: var(--fs-body); }
+.account-menu-id span,
+.field-hint,
+.modal-message,
+.field label                             { font-size: 14px; }
+.account-menu-item                       { font-size: 15px; }
+.field input                             { font-size: 16px; }
+.admin-table td                          { font-size: var(--fs-small); padding-top: 12px; padding-bottom: 12px; }
+.admin-table th                          { letter-spacing: .04em; }
+.card-heading p,
+.section-heading p                       { color: var(--muted); }
+
+/* Eyebrow labels: solid colour is easier to read at small size than gradient text */
+:root:not([data-theme="dark"]) .eyebrow,
+[data-theme="dark"] .eyebrow {
+    background: none;
+    -webkit-background-clip: border-box;
+    background-clip: border-box;
+    -webkit-text-fill-color: currentColor;
+    color: var(--sky-deep);
+    letter-spacing: .08em;
+}
+
+/* Form inputs: readable text and placeholder */
+textarea,
+select,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"]                     { font-size: 16px; }
+::placeholder                            { color: var(--muted); opacity: .85; }
+
+/* Stat numbers: solid sky blue in dark mode (gradient washed out on dark cards) */
+[data-theme="dark"] .stat-card h2        { color: var(--sky); }
+
+/* Table header and badges stay readable in dark mode */
+[data-theme="dark"] .admin-table th      { color: #c5d3e6; }
+
+/* ---------------------------------------------------------------------
+   SCORE CARD  (analysis result)
+   Ring colour = score level (green / amber / red, set from script.js).
+   Number sits on a solid disc, so it never has the same colour as the ring.
+   --------------------------------------------------------------------- */
+.score-card {
+    gap: 24px;
+    padding-top: 26px;
+    padding-bottom: 26px;
+    --score-color: var(--primary);
+}
+.score-card[data-level="good"] { --score-color: var(--green); }
+.score-card[data-level="mid"]  { --score-color: var(--yellow); }
+.score-card[data-level="low"]  { --score-color: var(--red); }
+
+.score-card h2                { color: var(--score-color); font-size: 38px; margin: 6px 0 8px; }
+.score-card p                 { color: var(--text); font-size: 15.5px; font-weight: 500; }
+
+.score-circle {
+    border: 0;
+    outline: 0;
+    background: conic-gradient(var(--score-color) 0deg, rgba(138, 159, 184, .25) 0deg);
+    box-shadow: 0 0 28px color-mix(in srgb, var(--score-color) 28%, transparent);
+    color: var(--text);
+    font-family: var(--font-heading);
+    font-size: 24px;
+    font-weight: 800;
+}
+.score-circle::before { background: var(--surface); }
+
+
+/* =====================================================================
+   UI FIXES (analyzer box, upload row, history / reports, sidebar font)
+   Placed last so these rules win over the older rules above.
+   ===================================================================== */
+
+/* ---------- Requirement Analyzer: smaller, tidier input card ---------- */
+.analyzer-card {
+    max-width: 960px;               /* card no longer stretches across very wide screens */
+    padding: 22px 24px;
+}
+.analyzer-card .section-heading {
+    margin-bottom: 16px;
+}
+.analyzer-card form label {
+    margin-bottom: 8px;
+}
+.analyzer-card textarea {
+    min-height: 120px;              /* was 165px */
+    max-height: 320px;
+    padding: 14px 16px;
+}
+
+/* Upload row: one compact dashed drop area instead of unstyled browser controls */
+.analyzer-card .document-input-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px 14px;
+    margin-top: 14px;
+    padding: 12px 14px;
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    background: var(--surface-soft);
+}
+.analyzer-card .document-input-row label {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+}
+.analyzer-card .document-input-row input[type="file"] {
+    flex: 1 1 220px;
+    min-width: 0;
+    font-family: var(--font-body);  /* "No file chosen" text now uses the site font */
+    font-size: 14.5px;
+    color: var(--muted);
+    cursor: pointer;
+}
+/* "Choose File" button now matches the site's secondary buttons */
+.analyzer-card input[type="file"]::file-selector-button,
+.document-upload-row input[type="file"]::file-selector-button {
+    margin-right: 12px;
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--text);
+    font-family: var(--font-heading);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color .2s, color .2s;
+}
+.analyzer-card input[type="file"]::file-selector-button:hover,
+.document-upload-row input[type="file"]::file-selector-button:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+.analyzer-card .input-footer {
+    margin-top: 10px;
+}
+.analyzer-card .analyzer-actions {
+    margin-top: 14px;
+}
+
+/* ---------- History + Reports: one consistent list style ---------- */
+.history-item,
+.report-card {
+    padding: 16px 18px;
+    gap: 18px;
+}
+/* Titles: same font, size and weight on both screens */
+.history-item-info h4,
+.report-info h3 {
+    font-family: var(--font-heading);
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.4;
+    margin-bottom: 6px;
+    color: var(--text);
+}
+/* Dates: larger, medium weight, higher contrast so they are easy to read */
+.history-item-info p,
+.report-info p {
+    font-family: var(--font-body);
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.4;
+    letter-spacing: .01em;
+    font-variant-numeric: tabular-nums;
+    color: var(--muted);
+}
+[data-theme="dark"] .history-item-info p,
+[data-theme="dark"] .report-info p {
+    color: #c9d6e8;
+}
+.history-item-info,
+.report-info {
+    min-width: 0;                   /* lets long titles wrap instead of pushing the buttons */
+}
+/* Risk badge stays on one line */
+.history-meta .risk-badge {
+    white-space: nowrap;
+    padding: 6px 14px;
+    font-size: 13.5px;
+    font-weight: 700;
+}
+.history-meta {
+    flex-shrink: 0;
+    gap: 12px;
+}
+/* View / Export buttons: identical size and font */
+.history-item .secondary-button,
+.report-card .secondary-button {
+    flex-shrink: 0;
+    min-width: 88px;
+    padding: 10px 20px;
+    font-family: var(--font-heading);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+}
+.history-item .secondary-button:hover,
+.report-card .secondary-button:hover {
+    color: var(--primary);
+}
+
+/* ---------- Sidebar menu: same font treatment as the Export button ---------- */
+.nav-item {
+    font-family: var(--font-heading);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+}
+.nav-item:hover {
+    color: var(--primary);
+}
+.nav-item.active {
+    color: var(--on-grad);
+}
+
+@media (max-width: 600px) {
+    .history-item,
+    .report-card {
+        flex-wrap: wrap;
+    }
+    .history-meta {
+        width: 100%;
+        justify-content: space-between;
+    }
+}

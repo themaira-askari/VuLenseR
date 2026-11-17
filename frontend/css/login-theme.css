@@ -1,0 +1,188 @@
+/* =====================================================================
+   NEW FILE: login-theme.css
+   Styling and animation only. No functionality changes.
+   Delete this file and remove its <link> from index.html to get the old look back.
+   ===================================================================== */
+
+/* ---------- PART 1: SDLC VuLenser default theme (whole website) ----------
+   Only changes CSS variables: Indigo + Cyan instead of Purple (#7657e8).
+   Delete PART 1 if you do not want to change the colors of the whole website. */
+:root {
+    --primary: #4f46e5;        /* Indigo  */
+    --primary-dark: #4338ca;
+    --primary-light: #e0e7ff;
+    --accent: #06b6d4;         /* Cyan    */
+}
+[data-theme="dark"] {
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --primary-light: #25275a;
+}
+
+/* ---------- PART 2: Login page (scoped to .auth-shell only) ---------- */
+.auth-shell {
+    /* The lamp's 4 color themes are switched from here (JS sets --c / --c-rgb / --on) */
+    --c: #06b6d4;
+    --c-rgb: 6, 182, 212;
+    --on: 1;
+    --lbg: #06141b;
+    position: relative;
+    overflow: hidden;
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr minmax(320px, 440px);
+    gap: 40px;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 6%;
+    background: var(--lbg);
+    color: #eef0f6;
+    transition: background 1s;
+}
+/* Background glow */
+.auth-shell .lm-glow {
+    position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(60% 70% at 25% 40%, rgba(var(--c-rgb), .22), transparent 70%);
+    opacity: var(--on); transition: opacity .8s;
+}
+
+/* Lamp */
+.lm-lampwrap { position: absolute; left: 0; top: max(0px, calc(50% - 260px)); /* FIX: centered with top instead of transform, so a JS transform cannot push it down */ width: calc(100% - 520px); min-width: 300px; height: 520px; display: flex; justify-content: center; z-index: 1; pointer-events: none; /* CHANGED: absolute so it does not disappear because of the grid */ }
+.lm-lampwrap .lm-knob { pointer-events: auto; }
+.lm-cone { position: absolute; top: 150px; left: 50%; width: 520px; height: 340px; transform: translateX(-50%);
+    background: linear-gradient(rgba(var(--c-rgb), .5), rgba(var(--c-rgb), 0));
+    clip-path: polygon(40% 0, 60% 0, 100% 100%, 0 100%); opacity: var(--on); transition: opacity .8s; filter: blur(2px); }
+.lm-lamp { position: relative; width: 260px; height: 500px; transition: transform .15s; /* FIX: explicit height + parallax is applied here now */ }
+.lm-shade { position: absolute; top: 60px; left: 30px; width: 200px; height: 64px; background: linear-gradient(#2a2a33, #0e0e12);
+    border-radius: 100px 100px 12px 12px; border: 1px solid rgba(255,255,255,.12); box-shadow: 0 0 30px rgba(var(--c-rgb), calc(.5 * var(--on))); }
+.lm-bulb { position: absolute; top: 116px; left: 100px; width: 60px; height: 14px; border-radius: 50%; background: var(--c);
+    opacity: var(--on); box-shadow: 0 0 28px 8px rgba(var(--c-rgb), .8); transition: all .8s; }
+.lm-pole { position: absolute; top: 124px; left: 127px; width: 6px; height: 340px; background: linear-gradient(90deg, #0b0b0f, #3a3a46, #0b0b0f); }
+.lm-base { position: absolute; top: 458px; left: 70px; width: 120px; height: 20px; border-radius: 50% 50% 8px 8px; background: #0e0e12; box-shadow: 0 10px 40px #000; }
+.lm-cord { position: absolute; top: 122px; left: 206px; width: 2px; height: 70px; background: #6c6a60; transform-origin: top;
+    transition: height .7s cubic-bezier(.3, 2.2, .5, .8); }
+.lm-cord.drag { transition: none; }
+.lm-knob { position: absolute; left: -6px; bottom: -22px; width: 14px; height: 26px; border-radius: 7px; cursor: grab; touch-action: none;
+    background: linear-gradient(#a5f3fc, #0e7490); box-shadow: 0 0 10px rgba(var(--c-rgb), .6); }
+.lm-hint { position: absolute; bottom: 0; left: 0; right: 0; text-align: center; font-size: 15px; color: #c3cde0; }
+
+/* Fireflies */
+.lm-fly { position: absolute; width: 5px; height: 5px; border-radius: 50%; background: var(--c); box-shadow: 0 0 10px var(--c);
+    opacity: 0; animation: lm-fly linear infinite; pointer-events: none; }
+@keyframes lm-fly { 0% { opacity: 0; transform: translate(0, 0); } 20% { opacity: .9; } 80% { opacity: .6; } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)); } }
+
+/* Glass card (the existing .auth-card, restyled) */
+.auth-shell .auth-card {
+    grid-column: 2;
+    position: relative; z-index: 2; justify-self: center; width: 100%;
+    background: rgba(255, 255, 255, .05); border: 1px solid rgba(255, 255, 255, .12);
+    -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, .5), 0 -1px 0 rgba(var(--c-rgb), .7) inset;
+    animation: lm-rise .9s cubic-bezier(.2, .9, .3, 1);
+}
+@keyframes lm-rise { from { opacity: 0; transform: translateY(30px); } }
+.auth-shell .auth-brand h1, .auth-shell .auth-form h2, .auth-shell .portal-selection h2 { color: #fff; }
+.auth-shell .auth-brand p, .auth-shell .auth-muted, .auth-shell .auth-footnote,
+.auth-shell .portal-selection p, .auth-shell #adminLoginNotice { color: #c3cde0; }
+.auth-shell .brand-icon { background: rgba(var(--c-rgb), .15); color: var(--c); }
+.auth-shell .auth-tabs { background: rgba(0, 0, 0, .35); }
+.auth-shell .auth-tab { color: #c3cde0; }
+.auth-shell .auth-tab.active { background: rgba(255, 255, 255, .12); color: #fff; box-shadow: none; }
+.auth-shell .auth-form label { color: #eef2fa; }
+.auth-shell .auth-form input { background: rgba(0, 0, 0, .3); border-color: rgba(255, 255, 255, .1); color: #fff; transition: border .3s, box-shadow .3s; }
+.auth-shell .auth-form input:focus { border-color: var(--c); box-shadow: 0 0 0 3px rgba(var(--c-rgb), .2); }
+.auth-shell .primary-button { background: var(--c); color: #04141a; box-shadow: 0 8px 30px rgba(var(--c-rgb), .4); transition: transform .2s, background 1s, box-shadow 1s; }
+.auth-shell .primary-button:hover { background: var(--c); filter: brightness(1.1); transform: translateY(-2px); }
+.auth-shell .primary-button:active { transform: scale(.98); }
+.auth-shell .portal-selection button { background: rgba(255, 255, 255, .06); color: #fff; border-color: rgba(255, 255, 255, .12); transition: transform .2s, border .3s, background .3s; }
+.auth-shell .portal-selection button:hover { border-color: var(--c); background: rgba(var(--c-rgb), .12); transform: translateY(-2px); }
+.auth-shell #backToPortals { color: var(--c); }
+
+/* Sound button */
+.lm-snd { position: absolute; top: 14px; right: 16px; z-index: 5; width: 42px; height: 42px; border-radius: 50%; cursor: pointer;
+    background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .15); color: #fff; }
+
+/* Mobile */
+@media (max-width: 860px) {
+    .auth-shell { grid-template-columns: 1fr; padding: 16px; align-content: start; }
+    .lm-lampwrap { position: relative; left: auto; top: auto; transform: none; width: 100%; min-width: 0; height: 290px; overflow: hidden; }
+    .auth-shell .auth-card { grid-column: 1; }
+    .lm-lamp { transform: scale(.6); transform-origin: top center; }
+    .lm-hint { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .lm-fly, .auth-shell .auth-card { animation: none; }
+}
+
+/* ---------- PART 3: Login readability (font sizes + contrast) ---------- */
+.auth-shell { font-family: var(--font-body); }
+.auth-shell .auth-card { padding: 36px; background: rgba(255, 255, 255, .07); }
+
+.auth-shell .auth-brand h1                 { font: 800 24px/1.2 var(--font-heading); letter-spacing: -0.01em; }
+.auth-shell .auth-brand p                  { font-size: 14.5px; margin-top: 3px; }
+
+.auth-shell .portal-selection h2,
+.auth-shell .auth-form h2                  { font: 700 26px/1.25 var(--font-heading); letter-spacing: -0.01em; margin-bottom: 4px; }
+.auth-shell .portal-selection p,
+.auth-shell .auth-muted                    { font-size: 16px; line-height: 1.55; margin-top: 0; }
+.auth-shell .portal-selection button       { font: 600 16px var(--font-heading); padding: 15px 16px; }
+
+.auth-shell #backToPortals                 { font: 600 15px var(--font-heading); }
+.auth-shell #adminLoginNotice              { font-size: 15px; line-height: 1.55; }
+
+.auth-shell .auth-tab                      { font: 700 15px var(--font-heading); padding: 12px; }
+.auth-shell .auth-form                     { gap: 12px; }
+.auth-shell .auth-form label               { font-size: 15px; font-weight: 600; margin-top: 8px; }
+.auth-shell .auth-form input               { font-size: 16px; padding: 14px 15px; border-color: rgba(255, 255, 255, .22); background: rgba(0, 0, 0, .35); }
+.auth-shell .auth-form input::placeholder  { color: #8da0ba; opacity: 1; }
+.auth-shell .primary-button                { font: 700 16px var(--font-heading); padding: 14px 18px; }
+.auth-shell .auth-error                    { font-size: 14.5px; color: #ff9aa6; min-height: 20px; }
+.auth-shell .auth-footnote                 { font-size: 14px; line-height: 1.6; }
+.lm-snd, .ld-home-btn                      { font-size: 15px; }
+
+
+/* =====================================================================
+   LIGHT MODE for the login screen (+ theme toggle button position)
+   Applies only when <html data-theme="light"> is set by the theme toggle.
+   The lamp colour themes (set by login-lamp.js) keep working.
+   ===================================================================== */
+.auth-shell > .ld-theme-btn { position: absolute; top: 14px; right: 66px; z-index: 5; }
+
+[data-theme="light"] .auth-shell {
+    background: #eaf4fc !important;     /* !important: login-lamp.js sets --lbg inline for the dark lamp themes */
+    color: #08131f;
+}
+[data-theme="light"] .auth-shell .lm-glow { opacity: calc(var(--on) * .55); }
+[data-theme="light"] .auth-shell .auth-card {
+    background: rgba(255, 255, 255, .88);
+    border-color: #cfe2f2;
+    box-shadow: 0 24px 60px rgba(14, 90, 140, .16), 0 -1px 0 rgba(var(--c-rgb), .7) inset;
+}
+[data-theme="light"] .auth-shell .auth-brand h1,
+[data-theme="light"] .auth-shell .auth-form h2,
+[data-theme="light"] .auth-shell .portal-selection h2 { color: #08131f; }
+[data-theme="light"] .auth-shell .auth-brand p,
+[data-theme="light"] .auth-shell .auth-muted,
+[data-theme="light"] .auth-shell .auth-footnote,
+[data-theme="light"] .auth-shell .portal-selection p,
+[data-theme="light"] .auth-shell #adminLoginNotice { color: #46576b; }
+[data-theme="light"] .auth-shell .brand-icon { background: rgba(2, 132, 199, .12); color: #0284c7; }
+[data-theme="light"] .auth-shell .auth-tabs { background: #e1eef9; }
+[data-theme="light"] .auth-shell .auth-tab { color: #46576b; }
+[data-theme="light"] .auth-shell .auth-tab.active { background: #fff; color: #08131f; box-shadow: 0 2px 8px rgba(14, 90, 140, .12); }
+[data-theme="light"] .auth-shell .auth-form label { color: #08131f; }
+[data-theme="light"] .auth-shell .auth-form input { background: #fff; border-color: #c5dcee; color: #08131f; }
+[data-theme="light"] .auth-shell .auth-form input::placeholder { color: #6b7d92; }
+[data-theme="light"] .auth-shell .auth-error { color: #be123c; }
+[data-theme="light"] .auth-shell .portal-selection button { background: #fff; color: #08131f; border-color: #c5dcee; }
+[data-theme="light"] .auth-shell .portal-selection button:hover { background: rgba(var(--c-rgb), .12); border-color: var(--c); }
+[data-theme="light"] .auth-shell #backToPortals { color: #0284c7; }
+[data-theme="light"] .auth-shell .lm-hint { color: #46576b; }
+[data-theme="light"] .auth-shell .lm-snd,
+[data-theme="light"] .auth-shell .ld-home-btn { background: #fff; border-color: #c5dcee; color: #08131f; }
+[data-theme="light"] .auth-shell .ld-home-btn:hover { color: #0284c7; border-color: #0284c7; }
+[data-theme="light"] .auth-shell .lm-cone { opacity: calc(var(--on) * .6); }
+
+@media (max-width: 860px) {
+    .auth-shell > .ld-theme-btn { top: 12px; right: 62px; }
+}

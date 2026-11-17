@@ -1,0 +1,193 @@
+/* landing.css - styling for the landing page inside index.html (everything is scoped to #landingPage) */
+#landingPage{position:fixed;inset:0;z-index:5000;overflow-y:auto;overflow-x:hidden;scroll-behavior:smooth}
+#landingPage.ld-hidden{display:none}
+#landingPage #ldFx,#landingPage #ldBar{position:fixed}
+#landingPage{--sky:#38bdf8;--deep:#0ea5e9;--bg:#030a12;--surface:#0a1420;--soft:#101c2c;--border:#182a42;--text:#e8f4ff;--muted:#b3c4d9;--grad:linear-gradient(135deg,#38bdf8,#0ea5e9);--head:"Manrope",system-ui,sans-serif;--body:"DM Sans",system-ui,sans-serif}
+#landingPage *{box-sizing:border-box;margin:0;padding:0}
+#landingPage{scroll-behavior:smooth}
+#landingPage{font-family:var(--body);background:var(--bg);color:var(--text);line-height:1.5;overflow-x:hidden}
+#landingPage a{color:inherit;text-decoration:none}
+#landingPage h1,#landingPage h2,#landingPage h3{font-family:var(--head);letter-spacing:-.015em;line-height:1.15}
+#landingPage .ico{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+#landingPage .wrap{max-width:1200px;margin:0 auto;padding:0 24px;position:relative;z-index:1}
+#landingPage .gt{background:linear-gradient(90deg,#fff,var(--sky));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+#landingPage .gs{background:linear-gradient(90deg,var(--sky),#7dd3fc);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+#landingPage #ldFx{position:fixed;inset:0;z-index:0;pointer-events:none}
+#landingPage #ldBar{position:fixed;top:0;left:0;right:0;height:3px;background:var(--grad);transform:scaleX(0);transform-origin:left;z-index:100}
+#landingPage .btn{display:inline-flex;align-items:center;gap:10px;padding:13px 28px;border-radius:999px;font:600 15px var(--head);border:1px solid transparent;cursor:pointer;transition:transform .2s,box-shadow .2s,border-color .2s;position:relative;overflow:hidden}
+#landingPage .btn-p{background:var(--grad);color:#031524;box-shadow:0 10px 28px rgba(56,189,248,.35)}
+#landingPage .btn-p::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-20deg);animation:ld-shine 3.2s ease-in-out infinite}
+#landingPage .btn-p:hover{transform:translateY(-3px);box-shadow:0 16px 38px rgba(56,189,248,.55)}
+#landingPage .btn-g{border-color:var(--border);background:rgba(255,255,255,.02)}
+#landingPage .btn-g:hover{border-color:var(--sky);color:var(--sky);transform:translateY(-3px)}
+#landingPage .btn-s{padding:9px 20px;font-size:14px}
+@keyframes ld-shine{0%,60%{left:-60%}100%{left:140%}}
+#landingPage .nav{position:sticky;top:0;z-index:50;background:rgba(3,10,18,.75);backdrop-filter:blur(14px);border-bottom:1px solid rgba(24,42,66,.7)}
+#landingPage .nav .wrap{display:flex;align-items:center;justify-content:space-between;height:70px}
+#landingPage .logo{display:flex;align-items:center;gap:10px;font:800 20px var(--head)}
+#landingPage .lm{width:34px;height:34px;border-radius:10px;background:var(--grad);display:grid;place-items:center;color:#031524;font-size:19px;animation:ld-glow 3s ease-in-out infinite}
+@keyframes ld-glow{0%,100%{box-shadow:0 0 0 0 rgba(56,189,248,.5)}50%{box-shadow:0 0 0 9px rgba(56,189,248,0)}}
+#landingPage .nc{display:flex;gap:10px}
+#landingPage .hero{position:relative;padding:60px 0 70px;min-height:calc(100vh - 70px);display:flex;align-items:center}
+#landingPage .cg{position:absolute;width:560px;height:560px;border-radius:50%;background:radial-gradient(circle,rgba(56,189,248,.2),transparent 65%);left:50%;top:40%;translate:-50% -50%;transition:left .5s ease-out,top .5s ease-out;pointer-events:none;z-index:0}
+#landingPage .hero .wrap{display:grid;grid-template-columns:1fr 1.1fr;gap:30px;align-items:center;width:100%}
+#landingPage .pill{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border:1px solid var(--border);border-radius:999px;font:600 14px var(--head);color:var(--sky);background:rgba(56,189,248,.06);margin-bottom:22px}
+#landingPage .pill i{width:7px;height:7px;border-radius:50%;background:var(--sky);animation:ld-blink 1.4s infinite}
+@keyframes ld-blink{50%{opacity:.25}}
+#landingPage .hero h1{font-size:clamp(40px,5.6vw,70px);font-weight:800;margin-bottom:20px}
+#landingPage .hero h1 .ty{display:block;min-height:1.12em}
+#landingPage .caret{display:inline-block;width:4px;height:.85em;background:var(--sky);margin-left:6px;vertical-align:-.05em;animation:ld-blink .9s infinite}
+#landingPage .lead{font-size:18px;line-height:1.6;color:var(--muted);max-width:460px;margin-bottom:32px}
+#landingPage .row{display:flex;gap:14px;flex-wrap:wrap}
+#landingPage .vis{position:relative;height:440px}
+#landingPage .stage{position:absolute;left:50%;top:0;width:560px;height:440px;transform:translateX(-50%) scale(var(--s,1));transform-origin:top center;perspective:900px}
+#landingPage .tilt{position:absolute;inset:0;transition:transform .25s ease-out;transform-style:preserve-3d}
+#landingPage .stage svg.ln{position:absolute;inset:0;width:560px;height:440px}
+#landingPage .floor{position:absolute;left:-8%;right:-8%;bottom:-20px;height:170px;background-image:linear-gradient(rgba(56,189,248,.4) 1px,transparent 1px),linear-gradient(90deg,rgba(56,189,248,.4) 1px,transparent 1px);background-size:36px 36px;transform:perspective(340px) rotateX(62deg);transform-origin:bottom;-webkit-mask-image:linear-gradient(to top,#000 10%,transparent 90%);mask-image:linear-gradient(to top,#000 10%,transparent 90%);opacity:.5;animation:ld-grid 3s linear infinite}
+@keyframes ld-grid{to{background-position:0 36px}}
+#landingPage .doc{position:absolute;left:0;top:150px;width:122px;height:142px;background:linear-gradient(160deg,#12243a,#0a1624);border:1px solid #1f3a5a;border-radius:16px;padding:14px;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,.5);animation:ld-bob 5s ease-in-out infinite}
+#landingPage .doc small{font:700 12px var(--head);letter-spacing:.08em;color:var(--muted)}
+#landingPage .dl{height:7px;border-radius:5px;background:#1b3350;margin:10px 0}
+#landingPage .dl.f{background:rgba(251,113,133,.45);animation:ld-flag 2.4s infinite}
+@keyframes ld-flag{50%{background:rgba(251,113,133,.15)}}
+#landingPage .scan{position:absolute;left:0;right:0;height:46px;top:-46px;background:linear-gradient(transparent,rgba(56,189,248,.3),transparent);animation:ld-scan 2.6s linear infinite}
+@keyframes ld-scan{to{top:100%}}
+#landingPage .core{position:absolute;left:225px;top:165px;width:110px;height:110px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#7dd3fc,#0ea5e9 60%,#075985);display:grid;place-items:center;font-size:44px;color:#031524;box-shadow:0 0 60px rgba(56,189,248,.6)}
+#landingPage .core::before,#landingPage .core::after{content:"";position:absolute;inset:-14px;border-radius:50%;border:2px dashed rgba(56,189,248,.6);animation:ld-spin 9s linear infinite}
+#landingPage .core::after{inset:-30px;border:1.5px solid rgba(56,189,248,.35);animation:ld-ping 2.4s ease-out infinite}
+@keyframes ld-spin{to{rotate:360deg}}
+@keyframes ld-ping{0%{transform:scale(.7);opacity:1}100%{transform:scale(1.25);opacity:0}}
+#landingPage .chip{position:absolute;padding:5px 12px;border:1.5px dashed rgba(56,189,248,.6);border-radius:12px;background:rgba(10,20,32,.85);font:700 13px var(--head);color:var(--sky);animation:ld-bob 4s ease-in-out infinite}
+#landingPage .fd{position:absolute;left:400px;width:160px;height:62px;display:flex;align-items:center;gap:10px;padding:0 12px;border-radius:14px;background:var(--surface);border:1px solid #1f3a5a;box-shadow:0 14px 30px rgba(0,0,0,.45);animation:ld-pop 9s ease-in-out infinite both}
+#landingPage .fd b{font:700 13px var(--head);display:block;line-height:1.25;white-space:nowrap}
+#landingPage .fd span{font:700 11.5px var(--head);padding:2px 8px;border-radius:999px}
+#landingPage .fd .ic{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:17px;flex:none}
+#landingPage .hi .ic{background:rgba(251,113,133,.18);color:#fda4af}
+#landingPage .hi span{background:rgba(251,113,133,.16);color:#fda4af}
+#landingPage .md .ic{background:rgba(251,191,36,.15);color:#fcd34d}
+#landingPage .md span{background:rgba(251,191,36,.14);color:#fcd34d}
+#landingPage .ok .ic{background:rgba(56,189,248,.16);color:var(--sky)}
+#landingPage .ok span{background:rgba(56,189,248,.14);color:var(--sky)}
+@keyframes ld-pop{0%,8%{opacity:0;transform:translateX(26px) scale(.88)}16%,84%{opacity:1;transform:none}94%,100%{opacity:0;transform:translateX(26px) scale(.88)}}
+@keyframes ld-bob{0%,100%{translate:0 0}50%{translate:0 -11px}}
+#landingPage .mq{border-block:1px solid var(--border);background:rgba(10,20,32,.7);overflow:hidden;position:relative;z-index:1;padding:18px 0}
+#landingPage .mt{display:flex;gap:16px;width:max-content;animation:ld-mq 28s linear infinite}
+#landingPage .mq:hover .mt{animation-play-state:paused}
+#landingPage .mt span{display:inline-flex;align-items:center;gap:8px;padding:8px 18px;border:1px solid var(--border);border-radius:999px;font:600 15px var(--head);color:var(--muted);background:var(--soft);transition:color .2s,border-color .2s}
+#landingPage .mt span:hover{color:var(--sky);border-color:var(--sky)}
+#landingPage .mt .ico{color:var(--sky)}
+@keyframes ld-mq{to{transform:translateX(-50%)}}
+#landingPage .s{padding:84px 0}
+#landingPage .sh{text-align:center;margin-bottom:46px}
+#landingPage .sh h2{font-size:clamp(28px,3.8vw,44px);font-weight:800}
+#landingPage .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;text-align:center}
+#landingPage .stat b{display:block;font:800 clamp(46px,6vw,76px)/1 var(--head)}
+#landingPage .stat span{color:var(--muted);font:500 16px var(--body)}
+#landingPage .flow{display:grid;grid-template-columns:repeat(3,1fr)}
+#landingPage .step{text-align:center;position:relative;padding:0 14px}
+#landingPage .orb{width:76px;height:76px;margin:0 auto 18px;border-radius:50%;background:var(--grad);color:#031524;display:grid;place-items:center;font-size:32px;position:relative;box-shadow:0 10px 28px rgba(56,189,248,.4)}
+#landingPage .orb::after{content:"";position:absolute;inset:-8px;border-radius:50%;border:2px solid var(--sky);animation:ld-ping 2.2s ease-out infinite}
+#landingPage .step h3{font-size:22px;margin-bottom:6px}
+#landingPage .step p{color:var(--muted);font-size:16px;line-height:1.6}
+#landingPage .step:not(:last-child)::after{content:"";position:absolute;top:38px;left:calc(50% + 52px);right:calc(-50% + 52px);height:2px;background:repeating-linear-gradient(90deg,var(--sky) 0 8px,transparent 8px 16px);transform-origin:left;transform:scaleX(0);transition:transform .9s .5s}
+#landingPage .step.in:not(:last-child)::after{transform:scaleX(1)}
+#landingPage .fg{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+#landingPage .card{position:relative;overflow:hidden;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:26px;transition:transform .25s,border-color .25s,box-shadow .25s}
+#landingPage .card::before{content:"";position:absolute;inset:0;background:radial-gradient(260px circle at var(--mx,50%) var(--my,50%),rgba(56,189,248,.2),transparent 70%);opacity:0;transition:opacity .3s}
+#landingPage .card:hover{transform:translateY(-6px);border-color:var(--sky);box-shadow:0 18px 40px rgba(56,189,248,.16)}
+#landingPage .card:hover::before{opacity:1}
+#landingPage .card>*{position:relative}
+#landingPage .it{width:48px;height:48px;border-radius:14px;background:var(--grad);color:#031524;display:grid;place-items:center;font-size:23px;margin-bottom:16px;box-shadow:0 8px 20px rgba(56,189,248,.3);transition:transform .35s}
+#landingPage .card:hover .it{transform:rotate(-8deg) scale(1.12)}
+#landingPage .card h3{font-size:18px;margin-bottom:4px}
+#landingPage .card p{color:var(--muted);font-size:15.5px;line-height:1.6}
+#landingPage .cta{position:relative;overflow:hidden;border-radius:28px;padding:2px}
+#landingPage .cta::before{content:"";position:absolute;width:200%;aspect-ratio:1;left:-50%;top:50%;translate:0 -50%;background:conic-gradient(transparent 0 60%,var(--sky) 82%,transparent);animation:ld-spin 5s linear infinite}
+#landingPage .cin{position:relative;border-radius:26px;padding:62px 24px;text-align:center;background:radial-gradient(circle at 50% 0%,rgba(56,189,248,.22),transparent 60%),var(--surface)}
+#landingPage .cin h2{font-size:clamp(28px,4vw,46px);font-weight:800;margin-bottom:28px}
+#landingPage footer{padding:30px 0;margin-top:84px;border-top:1px solid var(--border);color:var(--muted);font-size:15px}
+#landingPage footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}
+#landingPage .rv{opacity:0;transform:translateY(26px) scale(.97);transition:opacity .7s,transform .7s}
+#landingPage .rv.in{opacity:1;transform:none}
+@media(max-width:960px){#landingPage .hero .wrap{grid-template-columns:1fr}
+#landingPage .hero{min-height:0}
+#landingPage .vis{--s:.88;height:400px}
+#landingPage .fg{grid-template-columns:1fr 1fr}}
+@media(max-width:620px){#landingPage .nc .btn-g{display:none}
+#landingPage .vis{--s:.6;height:280px}
+#landingPage .fg{grid-template-columns:1fr}
+#landingPage .flow{grid-template-columns:1fr;gap:34px}
+#landingPage .step::after{display:none}
+#landingPage .stats{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){#landingPage *,#landingPage *::before,#landingPage *::after{animation:none!important;transition:none!important}
+#landingPage .rv{opacity:1;transform:none}
+#landingPage .step::after{transform:scaleX(1)!important}
+#landingPage .fd{opacity:1}}
+
+/* "Back to home" button on the login screen */
+.ld-home-btn{position:absolute;top:14px;left:16px;z-index:5;padding:10px 18px;border-radius:999px;cursor:pointer;font:600 15px "Manrope",system-ui,sans-serif;color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);transition:border-color .2s,color .2s,transform .2s}
+.ld-home-btn:hover{border-color:#38bdf8;color:#38bdf8;transform:translateY(-2px)}
+
+
+/* =====================================================================
+   LIGHT MODE for the landing page (+ theme toggle button)
+   The page is dark by default; these rules apply only when
+   <html data-theme="light"> is set by the theme toggle.
+   ===================================================================== */
+
+/* Theme toggle button (shared by the landing nav and the login screen) */
+.ld-theme-btn {
+    display: inline-grid; place-items: center;
+    width: 42px; height: 42px; padding: 0; border-radius: 50%; cursor: pointer;
+    color: #e8f4ff; background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .18);
+    transition: border-color .2s, color .2s, transform .2s, background .2s;
+}
+.ld-theme-btn:hover { border-color: #38bdf8; color: #38bdf8; transform: translateY(-2px); }
+.ld-theme-btn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+/* Show the sun while dark (click = go light), the moon while light (click = go dark) */
+.ld-theme-btn .ic-moon { display: none; }
+[data-theme="light"] .ld-theme-btn .ic-sun { display: none; }
+[data-theme="light"] .ld-theme-btn .ic-moon { display: block; }
+#landingPage .nc { align-items: center; }
+
+/* Colour tokens */
+[data-theme="light"] #landingPage {
+    --sky: #0284c7;
+    --deep: #0369a1;
+    --bg: #f3f9fe;
+    --surface: #ffffff;
+    --soft: #eaf5fd;
+    --border: #d3e4f3;
+    --text: #08131f;
+    --muted: #46576b;
+}
+[data-theme="light"] #landingPage .gt { background: linear-gradient(90deg, #08131f, #0284c7); -webkit-background-clip: text; background-clip: text; }
+[data-theme="light"] #landingPage .gs { background: linear-gradient(90deg, #0284c7, #38bdf8); -webkit-background-clip: text; background-clip: text; }
+
+/* Navigation and buttons */
+[data-theme="light"] #landingPage .nav { background: rgba(243, 249, 254, .85); border-bottom-color: #d3e4f3; }
+[data-theme="light"] #landingPage .btn-g { background: #fff; border-color: #c5dcee; color: var(--text); }
+[data-theme="light"] #landingPage .btn-g:hover { color: #0284c7; border-color: #0284c7; }
+[data-theme="light"] #landingPage .btn-p { box-shadow: 0 10px 24px rgba(14, 165, 233, .3); }
+[data-theme="light"] #landingPage .pill { background: rgba(2, 132, 199, .08); border-color: #bcd9ee; }
+[data-theme="light"] #landingPage .caret { background: #0284c7; }
+[data-theme="light"] #landingPage .cg { background: radial-gradient(circle, rgba(56, 189, 248, .22), transparent 65%); }
+[data-theme="light"] .ld-theme-btn { color: #08131f; background: #fff; border-color: #c5dcee; }
+[data-theme="light"] .ld-theme-btn:hover { color: #0284c7; border-color: #0284c7; }
+
+/* Hero illustration */
+[data-theme="light"] #landingPage .doc { background: linear-gradient(160deg, #ffffff, #e6f3fc); border-color: #bcd9ee; box-shadow: 0 16px 34px rgba(14, 90, 140, .16); }
+[data-theme="light"] #landingPage .dl { background: #cfe3f3; }
+[data-theme="light"] #landingPage .chip { background: rgba(255, 255, 255, .92); border-color: rgba(2, 132, 199, .55); }
+[data-theme="light"] #landingPage .fd { border-color: #bcd9ee; box-shadow: 0 12px 26px rgba(14, 90, 140, .16); }
+[data-theme="light"] #landingPage .hi .ic,
+[data-theme="light"] #landingPage .hi span { color: #be123c; }
+[data-theme="light"] #landingPage .md .ic,
+[data-theme="light"] #landingPage .md span { color: #b45309; }
+[data-theme="light"] #landingPage .floor { opacity: .35; }
+
+/* Marquee strip, cards, call-to-action */
+[data-theme="light"] #landingPage .mq { background: rgba(234, 245, 253, .8); }
+[data-theme="light"] #landingPage .card:hover { box-shadow: 0 18px 40px rgba(14, 90, 140, .14); }
+[data-theme="light"] #landingPage .card::before { background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgba(56, 189, 248, .22), transparent 70%); }
+[data-theme="light"] #landingPage .cin { background: radial-gradient(circle at 50% 0%, rgba(56, 189, 248, .25), transparent 60%), #fff; }
