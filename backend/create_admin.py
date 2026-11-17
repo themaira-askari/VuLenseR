@@ -25,7 +25,7 @@ def main():
     if existing_admin:
         raise SystemExit("The main administrator account already exists. Only one admin is allowed.")
 
-    print("Create the main SDLC VuLenseR administrator")
+    print("Create the main SDLC VuLenser administrator")
     name = input("Admin name: ").strip()
     email = input("Admin email: ").strip().lower()
     password = getpass("Admin password: ")

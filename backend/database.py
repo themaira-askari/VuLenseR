@@ -39,6 +39,10 @@ def init_database():
                 FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
             )
         """)
+        # Lightweight migration: profile picture column for existing databases.
+        columns = [row["name"] for row in connection.execute("PRAGMA table_info(users)").fetchall()]
+        if "avatar" not in columns:
+            connection.execute("ALTER TABLE users ADD COLUMN avatar TEXT")
         connection.commit()
 
 
@@ -69,7 +73,30 @@ def get_user_by_id(user_id: int):
 
 
 def public_user(user):
-    return {key: user[key] for key in ("id", "name", "email", "role", "is_active", "created_at")}
+    data = {key: user[key] for key in ("id", "name", "email", "role", "is_active", "created_at")}
+    data["avatar"] = user.get("avatar") or None
+    return data
+
+
+def update_user_name(user_id: int, name: str):
+    with get_connection() as connection:
+        connection.execute("UPDATE users SET name = ? WHERE id = ?", (name.strip(), user_id))
+        connection.commit()
+    return get_user_by_id(user_id)
+
+
+def update_user_avatar(user_id: int, avatar):
+    """avatar is a data URL string, or None to remove the picture."""
+    with get_connection() as connection:
+        connection.execute("UPDATE users SET avatar = ? WHERE id = ?", (avatar, user_id))
+        connection.commit()
+    return get_user_by_id(user_id)
+
+
+def update_user_password(user_id: int, password_hash: str):
+    with get_connection() as connection:
+        connection.execute("UPDATE users SET password_hash = ? WHERE id = ?", (password_hash, user_id))
+        connection.commit()
 
 
 def save_analysis(user_id: int, original_requirement: str, result: dict):
