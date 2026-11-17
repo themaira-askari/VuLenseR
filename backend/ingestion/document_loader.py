@@ -33,6 +33,13 @@ def extract_document_blocks(document):
             paragraph_text = paragraph.text.strip()
 
             if paragraph_text:
+                # Keep Word heading levels as Markdown headings so the
+                # section-based chunker can preserve the document hierarchy.
+                import re as _re
+                style_name = paragraph.style.name if paragraph.style is not None else ""
+                heading = _re.match(r"^Heading\s*(\d)", style_name or "")
+                if heading:
+                    paragraph_text = "#" * int(heading.group(1)) + " " + paragraph_text
                 content.append(paragraph_text)
 
         # Extract tables.
