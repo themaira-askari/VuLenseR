@@ -5,7 +5,7 @@ from pathlib import Path
 import chromadb
 
 from ingestion.document_loader import load_owasp_documents
-from ingestion.text_chunker import chunk_text
+from ingestion.text_chunker import chunk_text, chunk_by_sections, extract_control_id
 
 
 # ==================================================
@@ -82,11 +82,14 @@ def store_owasp_documents():
 
         valid_sources.add((source, category))
 
-        chunks = chunk_text(content)
+        # Hybrid section-based + boundary-aware chunking (keeps heading hierarchy).
+        chunks = chunk_by_sections(content)
 
         source_chunk_counts[source] = 0
 
-        for index, chunk in enumerate(chunks):
+        for index, chunk_info in enumerate(chunks):
+
+            chunk = chunk_info["text"]
 
             if not chunk or not chunk.strip():
                 continue
@@ -102,7 +105,11 @@ def store_owasp_documents():
             all_metadata.append({
                 "source": source,
                 "category": category,
-                "chunk_index": index
+                "chunk_index": index,
+                "section": chunk_info["section"][:300],
+                "control_id": extract_control_id(
+                    source, chunk_info["section"], chunk
+                )
             })
 
             source_chunk_counts[source] += 1
@@ -274,6 +281,10 @@ def format_results(results):
                 "chunk_index"
             ),
 
+            "section": metadata.get("section", ""),
+
+            "control_id": metadata.get("control_id", ""),
+
             "distance": distance
         })
 
@@ -378,33 +389,130 @@ def query_all_categories(
 # 8. RETRIEVE RELEVANT OWASP DOCUMENTATION
 # ==================================================
 
+def _query_terms(text: str) -> set:
+    import re
+
+    stop_words = {
+        "the", "and", "for", "with", "from", "that", "this", "should",
+        "shall", "must", "will", "can", "may", "system", "user", "users",
+        "able", "allow", "using", "use", "into", "their", "they", "are",
+        "was", "were", "has", "have", "had", "when", "where", "which",
+        "what", "who", "how", "its", "all", "any", "not", "only",
+    }
+    tokens = set(re.findall(r"[a-z0-9]{3,}", str(text).lower()))
+    return tokens - stop_words
+
+
+def _is_relevant_chunk(query: str, chunk: dict) -> bool:
+    """Combine Chroma distance with term overlap to suppress weak matches."""
+    distance = chunk.get("distance")
+    query_terms = _query_terms(query)
+    chunk_terms = _query_terms(chunk.get("content", ""))
+    overlap = query_terms.intersection(chunk_terms)
+
+    # Chroma's default L2 distance is lower for closer matches.
+    # A close semantic match may pass without literal word overlap.
+    if isinstance(distance, (int, float)) and distance <= 1.25:
+        return True
+    if overlap:
+        return True
+    return False
+
+
+# Related security concepts used to expand a requirement into a richer query.
+SECURITY_CONCEPTS = {
+    ("login", "log in", "sign in", "signin", "password", "credential", "account"):
+        "authentication password credential brute force session multi-factor",
+    ("register", "registration", "sign up", "signup"):
+        "authentication account creation password policy identity verification",
+    ("admin", "role", "permission", "privilege", "access", "authorize", "authorise"):
+        "authorization access control least privilege role permission",
+    ("upload", "file", "attachment", "document", "download"):
+        "file upload validation malicious file storage path traversal",
+    ("payment", "card", "credit", "billing", "bank", "personal", "email", "address", "profile", "health"):
+        "sensitive data protection encryption privacy personal information",
+    ("search", "form", "input", "submit", "query", "comment", "field"):
+        "input validation injection sanitization output encoding",
+    ("session", "cookie", "token", "jwt", "remember"):
+        "session management token expiry cookie secure logout",
+    ("api", "endpoint", "integration", "third party", "library", "dependency", "plugin"):
+        "api security supply chain dependency integrity",
+    ("log", "audit", "monitor", "alert", "report", "history"):
+        "security logging monitoring alerting audit trail",
+    ("error", "exception", "failure", "timeout", "retry"):
+        "error handling exceptional conditions information disclosure fail secure",
+    ("backup", "restore", "recovery", "delete", "data"):
+        "backup recovery data integrity retention",
+    ("reset", "forgot", "otp", "verification code"):
+        "password reset account recovery one-time code",
+}
+
+
+def expand_query(query: str) -> str:
+    """Add related security concepts so retrieval is not limited to literal words."""
+    lowered = str(query).lower()
+    additions = []
+    for triggers, concepts in SECURITY_CONCEPTS.items():
+        if any(trigger in lowered for trigger in triggers):
+            additions.append(concepts)
+    return f"{query.strip()}\nRelated security concepts: {' '.join(additions)}" if additions else query.strip()
+
+
+def _keyword_score(query_terms: set, chunk: dict) -> float:
+    """Share of query terms found in the chunk text, section title and control id."""
+    if not query_terms:
+        return 0.0
+    haystack = " ".join([
+        str(chunk.get("content", "")),
+        str(chunk.get("section", "")),
+        str(chunk.get("control_id", "")),
+    ])
+    return len(query_terms & _query_terms(haystack)) / len(query_terms)
+
+
 def retrieve_relevant_chunks(
     query: str,
     n_results: int = 6
 ) -> list:
-
+    """Hybrid retrieval: semantic search + keyword/metadata score, then relevance filter."""
     if not query or not query.strip():
-
-        raise ValueError(
-            "Search query cannot be empty."
-        )
-
+        raise ValueError("Search query cannot be empty.")
     if n_results <= 0:
-
-        raise ValueError(
-            "n_results must be greater than zero."
-        )
+        raise ValueError("n_results must be greater than zero.")
 
     collection = get_collection()
-
     if collection.count() == 0:
+        return []
 
-        raise RuntimeError(
-            "OWASP knowledge base is empty. "
-            "Run document ingestion first."
-        )
+    query = query.strip()[:3000]
+    expanded = expand_query(query)
 
-    return query_all_categories(
-        query=query.strip(),
-        n_results=n_results
+    # Retrieve a wider candidate set, then re-rank and filter weak matches.
+    candidates = query_all_categories(
+        query=expanded,
+        n_results=min(max(n_results * 3, n_results), collection.count())
     )
+
+    expanded_terms = _query_terms(expanded)
+    scored = []
+
+    for item in candidates:
+        if not item.get("content", "").strip():
+            continue
+        if not _is_relevant_chunk(query, item):
+            continue
+
+        distance = item.get("distance")
+        semantic = 1.0 / (1.0 + float(distance)) if isinstance(distance, (int, float)) else 0.0
+        keyword = _keyword_score(expanded_terms, item)
+        item["score"] = round(0.65 * semantic + 0.35 * keyword, 4)
+        scored.append(item)
+
+    # Deterministic order: identical input always gives identical evidence.
+    scored.sort(key=lambda c: (
+        -c["score"],
+        str(c.get("source", "")),
+        c.get("chunk_index") if isinstance(c.get("chunk_index"), int) else 0,
+    ))
+
+    return scored[:n_results]
